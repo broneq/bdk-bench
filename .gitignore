@@ -3,3 +3,6 @@ node_modules/
 .runs/
 .env
 .DS_Store
+/.bdk/.machine/
+/.bdk/settings.local.yaml
+coverage/

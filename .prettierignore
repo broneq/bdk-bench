@@ -6,3 +6,4 @@ pnpm-lock.yaml
 patches/
 tasks/*/hidden/
 tasks/*/reference/
+.gitignore
