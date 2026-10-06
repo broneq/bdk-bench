@@ -68,7 +68,7 @@ scope:
     - bundle-budget.config.json
 
 applies:
-  functional: all          # operator-i18n.f01 .. operator-i18n.f18
+  functional: all # operator-i18n.f01 .. operator-i18n.f18
   quality:
     - quality.q01
     - quality.q02

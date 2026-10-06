@@ -35,22 +35,22 @@ As an administrator on the user administration page, I can download the users I 
 
 One header row, then one record per user. Columns in this order:
 
-| #   | Header (English default) | Value                                                         |
-| --- | ------------------------ | ------------------------------------------------------------- |
-| 1   | ID                       | `id`                                                          |
-| 2   | Display name             | `displayName`                                                 |
-| 3   | Login                    | `login`                                                       |
-| 4   | Email                    | `email`                                                       |
-| 5   | Provider                 | `provider`                                                    |
-| 6   | Roles                    | all `roles` in API order, joined with `; ` (`USER; ADMIN`)    |
-| 7   | Status                   | `accountStatus` as its identifier: `ACTIVE` or `BLOCKED`      |
-| 8   | Last login               | `lastLoginAt`                                                 |
-| 9   | Created                  | `createdAt`                                                   |
-| 10  | Updated                  | `updatedAt`                                                   |
-| 11  | Preferred language       | `preferredLanguage`                                           |
-| 12  | Blocked at               | `blockedAt`                                                   |
-| 13  | Blocked by               | `blockedBy`                                                   |
-| 14  | Block reason             | `blockedReason`                                               |
+| #   | Header (English default) | Value                                                      |
+| --- | ------------------------ | ---------------------------------------------------------- |
+| 1   | ID                       | `id`                                                       |
+| 2   | Display name             | `displayName`                                              |
+| 3   | Login                    | `login`                                                    |
+| 4   | Email                    | `email`                                                    |
+| 5   | Provider                 | `provider`                                                 |
+| 6   | Roles                    | all `roles` in API order, joined with `; ` (`USER; ADMIN`) |
+| 7   | Status                   | `accountStatus` as its identifier: `ACTIVE` or `BLOCKED`   |
+| 8   | Last login               | `lastLoginAt`                                              |
+| 9   | Created                  | `createdAt`                                                |
+| 10  | Updated                  | `updatedAt`                                                |
+| 11  | Preferred language       | `preferredLanguage`                                        |
+| 12  | Blocked at               | `blockedAt`                                                |
+| 13  | Blocked by               | `blockedBy`                                                |
+| 14  | Block reason             | `blockedReason`                                            |
 
 - **Decision (not settled by the codebase):** the column set and order. Reason: identity first, then access, then timestamps, then block provenance; it covers everything the list and the detail show except the nested role grant history.
 - Role grant history (`roleGrants`) is **not** exported: it is nested, belongs to the per-user detail, and includes other administrators' ids and reasons that an access-review sheet does not need.
@@ -123,23 +123,23 @@ One header row, then one record per user. Columns in this order:
 
 ## Answers to likely questions
 
-| Question                                        | Answer                                                                                               |
-| ----------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| All users or only the current page?             | All users matching the current search and filters, in the current sort order, across all pages.     |
-| Should filters apply?                           | Yes: search, role and status, plus the sort order.                                                   |
-| Which columns?                                  | The 14 columns in the table above, in that order. Not the role grant history.                       |
-| Localized headers or fixed English ones?        | Localized through the registry, like the rest of the UI.                                             |
-| Status as "Active" or `ACTIVE`?                 | `ACTIVE` / `BLOCKED` identifiers.                                                                    |
-| Date format?                                    | As the API returns it (ISO 8601 UTC).                                                                |
-| Separator / encoding?                           | Comma, CRLF, UTF-8 with BOM.                                                                         |
-| Excel formula injection?                        | Yes, guard it: prefix `'` for values starting with `=`, `+`, `-`, `@`, tab or CR.                    |
-| File name?                                      | `users-YYYY-MM-DD.csv`, local date.                                                                  |
-| Server-side export / new endpoint?              | No. The contract has none; build it in the browser from the loaded list.                             |
-| Refetch before exporting?                       | No. Export what the page has loaded.                                                                 |
-| Add a CSV library?                              | No new dependencies.                                                                                 |
-| Where does the button go?                       | In the users list toolbar next to the "Showing ..." summary.                                         |
-| What if no users match?                         | Button disabled.                                                                                     |
-| Who can see it?                                 | Administrators only (the page is already admin-only).                                                |
-| Success message after download?                 | Not needed; the browser shows the download.                                                          |
-| Should I update docs / changelog?               | Yes: the admin user management spec and an Unreleased changelog entry.                              |
-| Should I commit?                                | No, leave it uncommitted.                                                                            |
+| Question                                 | Answer                                                                                          |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| All users or only the current page?      | All users matching the current search and filters, in the current sort order, across all pages. |
+| Should filters apply?                    | Yes: search, role and status, plus the sort order.                                              |
+| Which columns?                           | The 14 columns in the table above, in that order. Not the role grant history.                   |
+| Localized headers or fixed English ones? | Localized through the registry, like the rest of the UI.                                        |
+| Status as "Active" or `ACTIVE`?          | `ACTIVE` / `BLOCKED` identifiers.                                                               |
+| Date format?                             | As the API returns it (ISO 8601 UTC).                                                           |
+| Separator / encoding?                    | Comma, CRLF, UTF-8 with BOM.                                                                    |
+| Excel formula injection?                 | Yes, guard it: prefix `'` for values starting with `=`, `+`, `-`, `@`, tab or CR.               |
+| File name?                               | `users-YYYY-MM-DD.csv`, local date.                                                             |
+| Server-side export / new endpoint?       | No. The contract has none; build it in the browser from the loaded list.                        |
+| Refetch before exporting?                | No. Export what the page has loaded.                                                            |
+| Add a CSV library?                       | No new dependencies.                                                                            |
+| Where does the button go?                | In the users list toolbar next to the "Showing ..." summary.                                    |
+| What if no users match?                  | Button disabled.                                                                                |
+| Who can see it?                          | Administrators only (the page is already admin-only).                                           |
+| Success message after download?          | Not needed; the browser shows the download.                                                     |
+| Should I update docs / changelog?        | Yes: the admin user management spec and an Unreleased changelog entry.                          |
+| Should I commit?                         | No, leave it uncommitted.                                                                       |
