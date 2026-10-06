@@ -3,7 +3,7 @@ schema: 1
 id: L-l5f27dvo
 type: observation
 summary: "Two unrelated functions are named modelsOf: runner.ts (config models) and results.ts (models a result used)"
-status: proposed
+status: resolved
 source: agent:integration-reviewer
 author: Przemysław Broniszewski <przemek@broniszewski.net>
 at: 2026-10-06T20:33:58.196Z
@@ -27,3 +27,5 @@ Suggested fix: Rename the runner's helper, for example `configuredModels`.
 Triaged as nice-to-have at 2026-10-06T20:35:39.916Z
 
 Decided fix at 2026-10-06T21:15:02.555Z
+
+Resolved as resolved at 2026-10-06T21:27:55.516Z: fixed in 57b47df

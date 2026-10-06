@@ -1,0 +1,14 @@
+
+> bdk-bench@ test /Users/broneq/projects/bdk-bench
+> vitest run
+
+
+ RUN  v5.0.2 /Users/broneq/projects/bdk-bench
+
+
+ Test Files  20 passed (20)
+      Tests  175 passed (175)
+   Start at  23:28:27
+   Duration  3.75s (tests 78%, transform 13%, import 7%, worker 2%)
+
+exit 0

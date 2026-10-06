@@ -3,7 +3,7 @@ schema: 1
 id: L-iwpe184c
 type: observation
 summary: README example row (17/19 ... 44/51) disagrees with task.yaml check_counts (20/11/12/11 = 54)
-status: proposed
+status: resolved
 source: agent:verifier
 author: Przemysław Broniszewski <przemek@broniszewski.net>
 at: 2026-10-06T17:42:54.907Z
@@ -21,3 +21,5 @@ README.md:7 shows an example row `users-csv | 17/19 | 10/11 | 8/11 | 9/10 | 44/5
 Triaged as nice-to-have at 2026-10-06T20:35:42.320Z
 
 Decided fix at 2026-10-06T21:15:01.828Z
+
+Resolved as resolved at 2026-10-06T21:27:55.000Z: fixed in 57b47df

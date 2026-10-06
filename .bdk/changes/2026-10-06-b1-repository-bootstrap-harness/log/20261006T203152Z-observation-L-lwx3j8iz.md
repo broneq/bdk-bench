@@ -3,7 +3,7 @@ schema: 1
 id: L-lwx3j8iz
 type: observation
 summary: sandboxOf inside-repo test only covers one case; '..'-prefixed names misread as outside
-status: proposed
+status: resolved
 source: agent:reviewer
 author: Przemysław Broniszewski <przemek@broniszewski.net>
 at: 2026-10-06T20:31:52.033Z
@@ -25,3 +25,5 @@ Suggested fix: optional; compare `path === ".." || path.startsWith(`..${sep}`)`.
 Triaged as nice-to-have at 2026-10-06T20:35:39.481Z
 
 Decided fix at 2026-10-06T21:15:02.013Z
+
+Resolved as resolved at 2026-10-06T21:27:55.811Z: fixed in 57b47df

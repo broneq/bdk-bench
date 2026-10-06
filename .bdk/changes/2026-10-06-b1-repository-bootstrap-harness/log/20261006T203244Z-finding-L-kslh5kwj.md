@@ -3,7 +3,7 @@ schema: 1
 id: L-kslh5kwj
 type: finding
 summary: Probe test uses an OR assertion that cannot fail on the projection requirement
-status: proposed
+status: resolved
 source: agent:reviewer
 author: Przemysław Broniszewski <przemek@broniszewski.net>
 at: 2026-10-06T20:32:44.015Z
@@ -25,3 +25,5 @@ Suggested fix: Seed the ledger/rows so the projection has a known cost and asser
 Triaged as should-fix at 2026-10-06T20:35:39.141Z
 
 Decided fix at 2026-10-06T21:15:00.000Z
+
+Resolved as resolved at 2026-10-06T21:27:55.250Z: fixed in 57b47df

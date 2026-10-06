@@ -3,7 +3,7 @@ schema: 1
 id: L-u6zj24kd
 type: observation
 summary: promptfooEnv falls back to relative .cache when HOME is unset; SANDBOX_DIR uses homedir()
-status: proposed
+status: resolved
 source: agent:reviewer
 author: Przemysław Broniszewski <przemek@broniszewski.net>
 at: 2026-10-06T20:31:51.723Z
@@ -25,3 +25,5 @@ Suggested fix: optional; fall back to os.homedir() in promptfooEnv, or leave as 
 Triaged as nice-to-have at 2026-10-06T20:35:39.394Z
 
 Decided fix at 2026-10-06T21:15:01.921Z
+
+Resolved as resolved at 2026-10-06T21:27:56.585Z: fixed in 57b47df

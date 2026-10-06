@@ -3,7 +3,7 @@ schema: 1
 id: L-optesnfc
 type: observation
 summary: assertCommitted strips the status code from every line but the first; tree.ts comment misstates why .bdk/ is exempt
-status: proposed
+status: resolved
 source: agent:integration-reviewer
 author: Przemysław Broniszewski <przemek@broniszewski.net>
 at: 2026-10-06T20:33:58.064Z
@@ -25,3 +25,5 @@ Suggested fix: Split before trimming (`output.split("\n").filter(Boolean).map((l
 Triaged as should-fix at 2026-10-06T20:35:39.310Z
 
 Decided fix at 2026-10-06T21:15:00.174Z
+
+Resolved as resolved at 2026-10-06T21:27:56.047Z: fixed in 57b47df

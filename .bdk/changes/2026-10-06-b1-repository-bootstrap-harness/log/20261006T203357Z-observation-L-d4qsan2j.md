@@ -3,7 +3,7 @@ schema: 1
 id: L-d4qsan2j
 type: observation
 summary: Smoke runner reads versions.json from ROOT_DIR and hard-codes 100/15/4 instead of injected dirs and DEFAULT_*
-status: proposed
+status: resolved
 source: agent:integration-reviewer
 author: Przemysław Broniszewski <przemek@broniszewski.net>
 at: 2026-10-06T20:33:57.916Z
@@ -26,3 +26,5 @@ Suggested fix: Use `readVersions(join(dirs.rootDir, "versions.json"))`, and impo
 Triaged as should-fix at 2026-10-06T20:35:39.226Z
 
 Decided fix at 2026-10-06T21:15:00.088Z
+
+Resolved as resolved at 2026-10-06T21:27:54.397Z: fixed in 57b47df

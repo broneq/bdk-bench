@@ -3,7 +3,7 @@ schema: 1
 id: L-y2am8p8s
 type: observation
 summary: CLAUDE.md CI layout line omits the bench check step ci.yml runs
-status: proposed
+status: resolved
 source: agent:reviewer
 author: Przemysław Broniszewski <przemek@broniszewski.net>
 at: 2026-10-06T20:32:45.174Z
@@ -25,3 +25,5 @@ Suggested fix: Append "bench check" to that line.
 Triaged as nice-to-have at 2026-10-06T20:35:39.828Z
 
 Decided fix at 2026-10-06T21:15:02.376Z
+
+Resolved as resolved at 2026-10-06T21:27:56.899Z: fixed in 57b47df
