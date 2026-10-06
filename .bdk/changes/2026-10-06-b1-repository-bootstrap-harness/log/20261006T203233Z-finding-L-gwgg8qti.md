@@ -11,7 +11,9 @@ ticket: A-qy7ysb9p
 group: p05
 refs:
   - harness/regrade.ts:82
-level: should-fix
+review: true
+level: blocker
+disposition: fix
 ---
 
 Problem: regradeSeries writes each row's new judge.json (line 82) inside the loop, but the results file is only rewritten after the loop (line 89). If deps.judge throws on row N (network, auth, budget), rows 1..N-1 already carry new judge.json and ledger charges while the series file still holds the old metrics and old judgeHash.
@@ -21,3 +23,5 @@ Why it matters: the saved raw records and the result rows disagree, and the comm
 Suggested fix: collect the new judge.json contents and write them together with writeRows after the loop (or write results incrementally). Add a test where the judge rejects on the second row.
 
 Triaged as should-fix at 2026-10-06T20:35:38.879Z
+
+Decided fix at 2026-10-06T21:14:59.735Z

@@ -4,7 +4,7 @@ id: "06"
 title: Smoke suite and the bench entry point
 goal: "`pnpm bench smoke --probe` can run one plain Claude Code session on the fixture and record its row, and `pnpm bench check` validates the rendered configs without a model."
 success-measure: "`npx vitest run harness/suites` passes, `pnpm bench check` exits 0 and prints `checked smoke`, and `npx tsc --noEmit` and `npx eslint .` are clean for the whole project."
-do-not-touch: ["package.json", "pnpm-lock.yaml", "harness/hook.ts", "harness/provider.ts", "harness/cli.ts", "harness/series.ts", "harness/results.ts"]
+do-not-touch: ["package.json", "pnpm-lock.yaml"]
 depends-on: ["05"]
 spec-impact: [bench-runner]
 ---

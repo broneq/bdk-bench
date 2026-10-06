@@ -5,7 +5,7 @@ import { afterEach, describe, expect, it } from "vitest";
 
 import { record } from "./budget.ts";
 import type { RunContext, SuiteHooks } from "./hook.ts";
-import { callRun } from "./provider.ts";
+import RunProvider, { callRun } from "./provider.ts";
 import type { InnerProvider, RunDeps } from "./provider.ts";
 import type { SeriesPlan } from "./series.ts";
 
@@ -186,5 +186,12 @@ describe("callRun", () => {
     await expect(
       callRun("zz", SDK, "q", { vars: VARS }, undefined, deps(plan, {})),
     ).rejects.toThrow(/zz/);
+  });
+});
+
+describe("RunProvider", () => {
+  it("is named after the workflow its config declares", () => {
+    const provider = new RunProvider({ config: { workflow: "plain", sdk: {} } });
+    expect(provider.id()).toBe("bench:plain");
   });
 });

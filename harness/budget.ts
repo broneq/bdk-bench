@@ -57,19 +57,22 @@ export function runCap(ledger: Ledger, budgetUsd: number, perRunCapUsd: number):
 }
 
 export interface Projection {
-  readonly perCell: Readonly<Record<string, number>>;
+  readonly perWorkflow: Readonly<Record<string, number>>;
   readonly total: number;
 }
 
 export function projection(
-  probeCostPerCell: Readonly<Record<string, number>>,
-  runsPerCell: number,
+  probeCostPerWorkflow: Readonly<Record<string, number>>,
+  runsPerWorkflow: number,
 ): Projection {
-  const perCell = Object.fromEntries(
-    Object.entries(probeCostPerCell).map(([cell, cost]) => [cell, cost * runsPerCell]),
+  const perWorkflow = Object.fromEntries(
+    Object.entries(probeCostPerWorkflow).map(([workflow, cost]) => [
+      workflow,
+      cost * runsPerWorkflow,
+    ]),
   );
-  const total = Object.values(perCell).reduce((sum, cost) => sum + cost, 0);
-  return { perCell, total };
+  const total = Object.values(perWorkflow).reduce((sum, cost) => sum + cost, 0);
+  return { perWorkflow, total };
 }
 
 interface ProviderResult {

@@ -11,7 +11,9 @@ ticket: A-qy7ysb9p
 group: p07
 refs:
   - CLAUDE.md
-level: nice-to-have
+review: true
+level: blocker
+disposition: fix
 ---
 
 Problem: The Layout line for .github/workflows/ci.yml reads "CI: lint, format check, typecheck, unit tests", but ci.yml also runs `pnpm bench check`.
@@ -21,3 +23,5 @@ Why it matters: The layout description drifts from the workflow (BDK-ARCH-5); a 
 Suggested fix: Append "bench check" to that line.
 
 Triaged as nice-to-have at 2026-10-06T20:35:39.828Z
+
+Decided fix at 2026-10-06T21:15:02.376Z

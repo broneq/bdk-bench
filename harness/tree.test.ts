@@ -1,10 +1,22 @@
 import { execFileSync } from "node:child_process";
-import { writeFileSync, mkdirSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 
 import { assertCommitted, headCommit } from "./tree.ts";
+
+const tempDirs: string[] = [];
+
+afterEach(() => {
+  for (const dir of tempDirs.splice(0)) rmSync(dir, { recursive: true, force: true });
+});
+
+function temp(): string {
+  const dir = mkdtempSync(join(tmpdir(), "test-repo-"));
+  tempDirs.push(dir);
+  return dir;
+}
 
 function initRepo(dir: string): void {
   execFileSync("git", ["init", "--quiet", "--initial-branch", "main"], { cwd: dir });
@@ -21,8 +33,7 @@ function makeCommit(dir: string, message: string): void {
 
 describe("headCommit", () => {
   it("returns 40 hex characters equal to git rev-parse HEAD", () => {
-    const dir = join(tmpdir(), `test-repo-${Date.now()}`);
-    mkdirSync(dir, { recursive: true });
+    const dir = temp();
     initRepo(dir);
     makeCommit(dir, "initial commit");
 
@@ -39,8 +50,7 @@ describe("headCommit", () => {
 
 describe("assertCommitted", () => {
   it("passes when the repository is clean", () => {
-    const dir = join(tmpdir(), `test-repo-${Date.now()}`);
-    mkdirSync(dir, { recursive: true });
+    const dir = temp();
     initRepo(dir);
     makeCommit(dir, "initial commit");
 
@@ -50,8 +60,7 @@ describe("assertCommitted", () => {
   });
 
   it("passes when there are new files in results/ and .bdk/", () => {
-    const dir = join(tmpdir(), `test-repo-${Date.now()}`);
-    mkdirSync(dir, { recursive: true });
+    const dir = temp();
     initRepo(dir);
     makeCommit(dir, "initial commit");
 
@@ -68,8 +77,7 @@ describe("assertCommitted", () => {
   });
 
   it("throws when README.md is modified", () => {
-    const dir = join(tmpdir(), `test-repo-${Date.now()}`);
-    mkdirSync(dir, { recursive: true });
+    const dir = temp();
     initRepo(dir);
     writeFileSync(join(dir, "README.md"), "initial");
     execFileSync("git", ["add", "README.md"], { cwd: dir });
@@ -87,8 +95,7 @@ describe("assertCommitted", () => {
   });
 
   it("throws when there is an untracked file outside results/ and .bdk/", () => {
-    const dir = join(tmpdir(), `test-repo-${Date.now()}`);
-    mkdirSync(dir, { recursive: true });
+    const dir = temp();
     initRepo(dir);
     makeCommit(dir, "initial commit");
 
@@ -98,9 +105,22 @@ describe("assertCommitted", () => {
 
     expect(() => {
       assertCommitted(dir);
-    }).toThrow(/src/);
+    }).toThrow(/src\/new\.ts/);
     expect(() => {
       assertCommitted(dir);
     }).toThrow(/commit the working tree before a series/);
+  });
+
+  it("lists a modified tracked file by its bare path", () => {
+    const dir = temp();
+    initRepo(dir);
+    writeFileSync(join(dir, "README.md"), "initial");
+    execFileSync("git", ["add", "README.md"], { cwd: dir });
+    makeCommit(dir, "add README");
+    writeFileSync(join(dir, "README.md"), "modified");
+
+    expect(() => {
+      assertCommitted(dir);
+    }).toThrow(/:\nREADME\.md$/);
   });
 });

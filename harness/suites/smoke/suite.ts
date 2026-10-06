@@ -4,7 +4,8 @@ import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { readLedger, spent } from "../../budget.ts";
+import { DEFAULT_BUDGET_USD, DEFAULT_RUN_CAP_USD, readLedger, spent } from "../../budget.ts";
+import { DEFAULT_CONCURRENCY } from "../../cli.ts";
 import type { RunOptions, SuiteRunner } from "../../cli.ts";
 import { npmCi, prepareFixture } from "../../fixture.ts";
 import {
@@ -13,7 +14,6 @@ import {
   RUNS_DIR,
   SANDBOX_DIR,
   readVersions,
-  resultsFile,
   sandboxOf,
 } from "../../paths.ts";
 import { sessionProvider } from "../../providers.ts";
@@ -151,11 +151,12 @@ export function smokeRunner(
           return 1;
         }
       }
-      const versions = readVersions();
+      const versions = readVersions(join(dirs.rootDir, "versions.json"));
       const adapterVersion = sdkVersion(readFileSync(join(dirs.rootDir, "package.json"), "utf8"));
+      const resultsFile = (name: string): string => join(dirs.resultsDir, SUITE, `${name}.jsonl`);
       const series = freshSeriesName(
         `${options.probe ? "probe" : "series"}-${seriesStamp()}`,
-        (name) => readRows(resultsFile(SUITE, name, dirs.rootDir)).length > 0,
+        (name) => readRows(resultsFile(name)).length > 0,
       );
       const dir = join(dirs.runsDir, "series", SUITE, series);
       const sandbox = sandboxOf(SUITE, series, dirs.sandboxDir, dirs.rootDir);
@@ -172,7 +173,7 @@ export function smokeRunner(
         budgetUsd: options.budget,
         runCapUsd: options.runCap,
         ledgerFile: dirs.ledgerFile,
-        resultsFile: join(dirs.resultsDir, SUITE, `${series}.jsonl`),
+        resultsFile: resultsFile(series),
         concurrency: options.concurrency,
         fixtureBase,
         fixtureCommit: versions.fixture.commit,
@@ -207,11 +208,11 @@ export function smokeRunner(
             dir: seriesDir,
             sandbox: seriesDir,
             runs,
-            budgetUsd: 100,
-            runCapUsd: 15,
+            budgetUsd: DEFAULT_BUDGET_USD,
+            runCapUsd: DEFAULT_RUN_CAP_USD,
             ledgerFile: join(dir, "budget.json"),
             resultsFile: join(dir, "rows.jsonl"),
-            concurrency: 4,
+            concurrency: DEFAULT_CONCURRENCY,
             fixtureBase: join(dir, "fixture"),
             fixtureCommit: "0".repeat(40),
             benchCommit: "0".repeat(40),

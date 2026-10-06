@@ -4,6 +4,8 @@
 import { execFileSync, spawn } from "node:child_process";
 import { join } from "node:path";
 
+import { cacheHome } from "./paths.ts";
+
 function promptfooBin(rootDir: string): string {
   return join(rootDir, "node_modules/.bin/promptfoo");
 }
@@ -15,11 +17,10 @@ function promptfooBin(rootDir: string): string {
 export function promptfooEnv(
   env: Readonly<Record<string, string | undefined>>,
 ): Record<string, string> {
-  const cache = env.XDG_CACHE_HOME ?? join(env.HOME ?? "", ".cache");
   return {
     PROMPTFOO_DISABLE_TELEMETRY: "1",
     PROMPTFOO_DISABLE_UPDATE: "1",
-    PROMPTFOO_CONFIG_DIR: join(cache, "bdk-bench", "promptfoo"),
+    PROMPTFOO_CONFIG_DIR: join(cacheHome(env), "bdk-bench", "promptfoo"),
   };
 }
 

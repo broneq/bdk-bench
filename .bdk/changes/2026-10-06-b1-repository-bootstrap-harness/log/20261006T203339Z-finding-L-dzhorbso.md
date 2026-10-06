@@ -3,7 +3,7 @@ schema: 1
 id: L-dzhorbso
 type: finding
 summary: Rendered configs call anthropic:claude-agent-sdk directly; harness provider.ts is never loaded, so no run is isolated
-status: proposed
+status: resolved
 source: agent:integration-reviewer
 author: Przemysław Broniszewski <przemek@broniszewski.net>
 at: 2026-10-06T20:33:39.337Z
@@ -26,3 +26,5 @@ Why it matters: In a real `pnpm bench smoke --probe`, promptfoo's SDK provider g
 Suggested fix: Restore the wrapper in providers.ts: `ProviderEntry = { id: string; label: string; config: RunProviderConfig }` built as `{ id: \`file://${fileURLToPath(new URL("./provider.ts", import.meta.url))}\`, label, config: { workflow: label, sdk: {...} } }`; read `config.sdk.model` in runner.ts `modelsOf`; fix providers.test.ts and suite.test.ts to the plan's `config.sdk.*` assertions; add one runner or suite test asserting each rendered provider's `id` ends with `/harness/provider.ts` and its `config.workflow` equals its label (the seam test that would have caught this). Then run the approved `bench smoke --probe` and check the row has `completed` 1, `turns` and `wall_s`.
 
 Triaged as blocker at 2026-10-06T20:35:38.469Z
+
+Resolved as resolved at 2026-10-06T20:43:20.702Z: provider.ts wrapper restored, seam test added, committed in a5320b6

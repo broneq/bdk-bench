@@ -4,7 +4,7 @@
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { homedir } from "node:os";
-import { basename, dirname, isAbsolute, join, relative } from "node:path";
+import { basename, dirname, isAbsolute, join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import type { FixturePin } from "./fixture.ts";
@@ -13,14 +13,16 @@ export const ROOT_DIR = dirname(dirname(fileURLToPath(import.meta.url)));
 export const RUNS_DIR = join(ROOT_DIR, ".runs");
 export const LEDGER_FILE = join(RUNS_DIR, "budget.json");
 
+/** The user cache directory: XDG_CACHE_HOME, else `$HOME/.cache`, else the home directory's `.cache`. */
+export function cacheHome(env: Readonly<Record<string, string | undefined>>): string {
+  return env.XDG_CACHE_HOME ?? join(env.HOME ?? homedir(), ".cache");
+}
+
 /**
  * Working copies and config homes: outside the repository, because a session
  * that walks up from its working copy must not find the repository's own files.
  */
-export const SANDBOX_DIR = join(
-  process.env.XDG_CACHE_HOME ?? join(homedir(), ".cache"),
-  "bdk-bench",
-);
+export const SANDBOX_DIR = join(cacheHome(process.env), "bdk-bench");
 
 /**
  * A series' sandbox directory, one per checkout: two worktrees name a series
@@ -36,7 +38,8 @@ export function sandboxOf(
   const checkout = `${basename(repoRoot)}-${createHash("sha256").update(repoRoot).digest("hex").slice(0, 8)}`;
   const dir = join(root, checkout, suite, series);
   const path = relative(repoRoot, dir);
-  if (!path.startsWith("..") && !isAbsolute(path)) {
+  const outside = path === ".." || path.startsWith(`..${sep}`) || isAbsolute(path);
+  if (!outside) {
     throw new Error(
       `the bench sandbox ${dir} lies inside the repository; point XDG_CACHE_HOME elsewhere`,
     );

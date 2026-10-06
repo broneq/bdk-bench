@@ -1,9 +1,9 @@
 import { mkdtempSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { homedir, tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
-import { ROOT_DIR, readVersions, resultsFile, sandboxOf } from "./paths.ts";
+import { ROOT_DIR, cacheHome, readVersions, resultsFile, sandboxOf } from "./paths.ts";
 
 describe("sandboxOf", () => {
   it("places a series' sandbox under the sandbox root and the checkout name", () => {
@@ -21,6 +21,23 @@ describe("sandboxOf", () => {
 
   it("refuses a sandbox root inside the repository", () => {
     expect(() => sandboxOf("smoke", "s1", `${ROOT_DIR}/.cache`)).toThrow(/inside the repository/);
+  });
+});
+
+describe("sandboxOf with a dot-prefixed directory", () => {
+  it("accepts a sandbox root outside the repository whose name merely starts with two dots", () => {
+    expect(() => sandboxOf("smoke", "s1", "/c/..cache", "/r/bdk-bench")).not.toThrow();
+    expect(() => sandboxOf("smoke", "s1", "/r/bdk-bench/..cache", "/r/bdk-bench")).toThrow(
+      /inside the repository/,
+    );
+  });
+});
+
+describe("cacheHome", () => {
+  it("prefers XDG_CACHE_HOME, then HOME, then the home directory", () => {
+    expect(cacheHome({ XDG_CACHE_HOME: "/c", HOME: "/h" })).toBe("/c");
+    expect(cacheHome({ HOME: "/h" })).toBe("/h/.cache");
+    expect(cacheHome({})).toBe(join(homedir(), ".cache"));
   });
 });
 

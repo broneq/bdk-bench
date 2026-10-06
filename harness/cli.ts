@@ -2,7 +2,7 @@
 // suites. The suites own their runs; this module owns only the command line.
 import { DEFAULT_BUDGET_USD, DEFAULT_RUN_CAP_USD } from "./budget.ts";
 
-const DEFAULT_CONCURRENCY = 4;
+export const DEFAULT_CONCURRENCY = 4;
 
 const USAGE = [
   "usage: pnpm bench <suite> [--probe] [--runs N] [--budget USD] [--run-cap USD] [--concurrency N]",

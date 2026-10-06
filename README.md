@@ -4,7 +4,7 @@ A benchmark of AI coding workflows. The same short, realistic request goes to ea
 
 | workflow | task      | functional | quality | tests | process | total | cost      | time   |
 | -------- | --------- | ---------- | ------- | ----- | ------- | ----- | --------- | ------ |
-| example  | users-csv | 17/19      | 10/11   | 8/11  | 9/10    | 44/51 | 10.20 USD | 26 min |
+| example  | users-csv | 17/20      | 10/11   | 8/12  | 9/11    | 44/54 | 10.20 USD | 26 min |
 
 ## How a run is scored
 

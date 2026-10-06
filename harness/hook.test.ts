@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { BudgetReached, readLedger, record } from "./budget.ts";
 import {
@@ -14,10 +14,12 @@ import {
 } from "./hook.ts";
 import type { EvalResult, Measured, SuiteHooks } from "./hook.ts";
 import { readRows } from "./results.ts";
+import { SERIES_ENV, writePlan } from "./series.ts";
 import type { SeriesPlan, WorkflowPlan } from "./series.ts";
 
 const dirs: string[] = [];
 afterEach(() => {
+  vi.unstubAllEnvs();
   for (const dir of dirs.splice(0)) rmSync(dir, { recursive: true, force: true });
 });
 
@@ -342,5 +344,32 @@ describe("extensionHook", () => {
   it("passes other hooks through without a plan", async () => {
     const context = { test: { vars: {} } };
     await expect(extensionHook("beforeAll", context)).resolves.toBe(context);
+  });
+
+  it("appends a row for the workflow the provider named in the response's metadata", async () => {
+    const { dir, plan } = setup();
+    writePlan(join(dir, "plan.json"), plan);
+    vi.stubEnv(SERIES_ENV, join(dir, "plan.json"));
+    const result: EvalResult = {
+      response: {
+        ...RESULT.response,
+        metadata: { ...RESULT.response?.metadata, benchWorkflow: "a" },
+      },
+    };
+    await extensionHook("afterEach", { test: { vars: VARS }, result });
+    expect(readRows(plan.resultsFile).map((row) => [row.workflow, row.item, row.run])).toEqual([
+      ["a", "task", 2],
+    ]);
+  });
+
+  it("falls back to the provider's label when a call that threw left no metadata", async () => {
+    const { dir, plan } = setup();
+    writePlan(join(dir, "plan.json"), plan);
+    vi.stubEnv(SERIES_ENV, join(dir, "plan.json"));
+    const result = { error: "boom", provider: { label: "a" } };
+    await extensionHook("afterEach", { test: { vars: VARS }, result });
+    const [row] = readRows(plan.resultsFile);
+    expect(row?.workflow).toBe("a");
+    expect(row?.discarded).toBe("provider error: boom");
   });
 });

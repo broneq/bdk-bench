@@ -1,7 +1,6 @@
-// Verify the working tree is clean before running a series: changes outside
-// results/ and .bdk/ must be committed. All sessions in a run are on the same
-// commit; session changes live in results/ and .bdk/; uncommitted project changes
-// would interfere with reproducibility.
+// Verify the working tree is clean before running a series, so the rows record
+// the commit that ran. results/ (new rows) and .bdk/ (workflow state of the
+// session that builds the bench) are exempt.
 import { execFileSync } from "node:child_process";
 import { ROOT_DIR } from "./paths.ts";
 
@@ -22,15 +21,19 @@ export function headCommit(repoRoot: string = ROOT_DIR): string {
  * outside these directories.
  */
 export function assertCommitted(repoRoot: string = ROOT_DIR): void {
-  const status = execFileSync("git", ["status", "--porcelain", ":!results", ":!.bdk"], {
-    cwd: repoRoot,
-    encoding: "utf8",
-    stdio: "pipe",
-  }).trim();
+  const output = execFileSync(
+    "git",
+    ["status", "--porcelain", "--untracked-files=all", ":!results", ":!.bdk"],
+    { cwd: repoRoot, encoding: "utf8", stdio: "pipe" },
+  );
+  const paths = output
+    .split("\n")
+    .filter(Boolean)
+    .map((line) => line.slice(3));
 
-  if (status) {
-    const lines = status.split("\n");
-    const paths = lines.map((line) => line.replace(/^.. /, "")).join("\n");
-    throw new Error(`commit the working tree before a series; the rows record HEAD:\n${paths}`);
+  if (paths.length > 0) {
+    throw new Error(
+      `commit the working tree before a series; the rows record HEAD:\n${paths.join("\n")}`,
+    );
   }
 }

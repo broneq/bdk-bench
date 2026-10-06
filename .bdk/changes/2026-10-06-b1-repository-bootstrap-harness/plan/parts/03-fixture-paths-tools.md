@@ -4,7 +4,7 @@ id: "03"
 title: Fixture cache, locations, committed-tree check and pinned tool calls
 goal: The pinned fixture is prepared and cached, run directories are located outside the repository, and promptfoo is called from the root package.
 success-measure: "`npx vitest run harness/fixture.test.ts harness/paths.test.ts harness/tree.test.ts harness/tools.test.ts` passes and `npx eslint` on the four modules is clean."
-do-not-touch: ["package.json", "pnpm-lock.yaml", "harness/hook.ts", "harness/provider.ts", "harness/cli.ts"]
+do-not-touch: ["package.json", "pnpm-lock.yaml"]
 depends-on: ["01"]
 spec-impact: [bench-runner]
 ---

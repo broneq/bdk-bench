@@ -9,6 +9,8 @@ scope: high+
 narrowed-from: full
 opened-at: 2026-10-06T20:36:11.801Z
 author: Przemysław Broniszewski <przemek@broniszewski.net>
+closed-at: 2026-10-06T20:47:11.086Z
+outcome: ok
 dropped:
   - L-bdw67ijx
   - L-226dmo7r

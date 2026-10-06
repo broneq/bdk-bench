@@ -7,7 +7,7 @@ import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { record } from "./budget.ts";
-import type { RecordedJudgement, SuiteHooks } from "./hook.ts";
+import type { RecordedJudgement, RegradableJudge, SuiteHooks } from "./hook.ts";
 import type { JudgeRequest, Judgement } from "./judge.ts";
 import { readRows, writeRows } from "./results.ts";
 import type { ResultRow } from "./results.ts";
@@ -35,6 +35,13 @@ function judgeFile(rawDir: string, row: ResultRow): string {
   return join(rawDir, row.workflow, `${row.item}.run-${String(row.run)}`, "judge.json");
 }
 
+interface PendingRegrade {
+  readonly row: ResultRow;
+  readonly file: string;
+  readonly saved: RecordedJudgement;
+  readonly judge: RegradableJudge;
+}
+
 /** Resolves to the exit code: 0 re-graded, 2 nothing to re-grade. */
 export async function regradeSeries(
   suite: string,
@@ -54,39 +61,45 @@ export async function regradeSeries(
     return 2;
   }
   const counted = rows.filter((row) => row.discarded === null);
-  // Every request is checked before the first judge call, so a re-grade never stops halfway.
-  const missing = counted.find((row) => !existsSync(judgeFile(deps.rawDir, row)));
-  if (missing !== undefined) {
-    io.printError(
-      `no raw records of ${suite} ${series} ${missing.workflow} ${missing.item} run ${String(missing.run)}: ${judgeFile(deps.rawDir, missing)}`,
-    );
-    return 2;
-  }
-  const regraded: ResultRow[] = [];
-  for (const row of rows) {
-    if (row.discarded !== null) {
-      regraded.push(row);
-      continue;
-    }
+  // Every saved request and its judge are resolved before the first judge call, so a re-grade
+  // never starts what it cannot finish.
+  const pending: PendingRegrade[] = [];
+  for (const row of counted) {
     const file = judgeFile(deps.rawDir, row);
+    if (!existsSync(file)) {
+      io.printError(
+        `no raw records of ${suite} ${series} ${row.workflow} ${row.item} run ${String(row.run)}: ${file}`,
+      );
+      return 2;
+    }
     const saved = JSON.parse(readFileSync(file, "utf8")) as RecordedJudgement;
-    const current = judges[saved.judge];
-    if (current === undefined) {
+    const judge = judges[saved.judge];
+    if (judge === undefined) {
       io.printError(`${suite} declares no re-gradable judge ${saved.judge} (${file})`);
       return 2;
     }
-    const request = { system: current.system, schema: current.schema, prompt: saved.prompt };
+    pending.push({ row, file, saved, judge });
+  }
+  const regradedRows = new Map<ResultRow, ResultRow>();
+  const savedJudgements: [file: string, saved: RecordedJudgement][] = [];
+  for (const { row, file, saved, judge } of pending) {
+    const request = { system: judge.system, schema: judge.schema, prompt: saved.prompt };
     const judgement = await deps.judge(request);
     record(deps.ledgerFile, { suite, workflow: row.workflow, run: row.run, cost: judgement.cost });
-    const next: RecordedJudgement = { ...saved, ...request, answer: judgement.output };
-    writeFileSync(file, `${JSON.stringify(next, null, 2)}\n`);
-    regraded.push({
+    savedJudgements.push([file, { ...saved, ...request, answer: judgement.output }]);
+    regradedRows.set(row, {
       ...row,
-      metrics: { ...row.metrics, ...current.metrics(judgement.output, row.item) },
-      provenance: { ...row.provenance, judgeHash: judgeHash(current.system, current.schema) },
+      metrics: { ...row.metrics, ...judge.metrics(judgement.output, row.item) },
+      provenance: { ...row.provenance, judgeHash: judgeHash(judge.system, judge.schema) },
     });
   }
-  writeRows(deps.resultsFile, regraded);
+  for (const [file, saved] of savedJudgements) {
+    writeFileSync(file, `${JSON.stringify(saved, null, 2)}\n`);
+  }
+  writeRows(
+    deps.resultsFile,
+    rows.map((row) => regradedRows.get(row) ?? row),
+  );
   io.print(`re-graded ${String(counted.length)} rows of ${suite} ${series}: ${deps.resultsFile}`);
   return 0;
 }

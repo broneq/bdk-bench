@@ -12,7 +12,9 @@ group: integration
 refs:
   - harness/suites/smoke/suite.ts
   - BDK-ARCH-5
-level: should-fix
+review: true
+level: blocker
+disposition: fix
 ---
 
 Problem: harness/suites/smoke/suite.ts:154 calls `readVersions()` with its default `<ROOT_DIR>/versions.json`, while every other location of `run` comes from `deps.dirs` (rootDir, runsDir, ...). `check()` (lines 210-214) hard-codes budget 100, run cap 15 and concurrency 4, which `budget.ts` (`DEFAULT_BUDGET_USD`, `DEFAULT_RUN_CAP_USD`) and `cli.ts` (`DEFAULT_CONCURRENCY`) also define.
@@ -22,3 +24,5 @@ Why it matters: The injected `dirs` seam is only partial, so the suite test "no 
 Suggested fix: Use `readVersions(join(dirs.rootDir, "versions.json"))`, and import the default constants (export `DEFAULT_CONCURRENCY` from cli.ts) in `check()`. When B3 adds the next suite, move the shared run skeleton out of the suite then (BDK-ARCH-4).
 
 Triaged as should-fix at 2026-10-06T20:35:39.226Z
+
+Decided fix at 2026-10-06T21:15:00.088Z

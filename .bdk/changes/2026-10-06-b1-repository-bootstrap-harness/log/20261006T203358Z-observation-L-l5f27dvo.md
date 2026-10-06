@@ -13,7 +13,9 @@ refs:
   - harness/runner.ts
   - harness/results.ts
   - BDK-CQ-1
-level: nice-to-have
+review: true
+level: blocker
+disposition: fix
 ---
 
 Problem: harness/runner.ts:77 defines a private `modelsOf(workflows)` that joins the configured models of the workflows into a string; harness/results.ts exports `modelsOf(result)` that lists the models of a session's `modelUsage`, which hook.ts uses. Same name, different inputs and meaning, across two parts.
@@ -23,3 +25,5 @@ Why it matters: A reader or a later edit can import the wrong one; it is only a 
 Suggested fix: Rename the runner's helper, for example `configuredModels`.
 
 Triaged as nice-to-have at 2026-10-06T20:35:39.916Z
+
+Decided fix at 2026-10-06T21:15:02.555Z

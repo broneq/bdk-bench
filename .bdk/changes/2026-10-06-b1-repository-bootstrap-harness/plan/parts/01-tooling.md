@@ -4,7 +4,7 @@ id: "01"
 title: Root package, pinned promptfoo and tooling configuration
 goal: The repository installs its pinned tools with the promptfoo patch applied and has lint, format, typecheck and unit test configuration.
 success-measure: "`pnpm install --frozen-lockfile` exits 0 with the patch applied, and `npx prettier --check` passes on every file this part wrote."
-do-not-touch: ["checklist/**", "tasks/**", "README.md", "CLAUDE.md", ".bdk/**"]
+do-not-touch: ["checklist/**", "tasks/**", ".bdk/**"]
 depends-on: []
 spec-impact: [bench-runner]
 ---

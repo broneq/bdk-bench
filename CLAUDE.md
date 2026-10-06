@@ -12,7 +12,7 @@ harness/suites/<name>/ - one benchmark suite per directory (e.g. `smoke`): its i
 patches/       - pnpm patches applied to dependencies (promptfoo)
 versions.json  - pinned versions of the tools the harness drives
 package.json, pnpm-lock.yaml - scripts and exact dependency versions
-.github/workflows/ci.yml - CI: lint, format check, typecheck, unit tests
+.github/workflows/ci.yml - CI: lint, format check, typecheck, unit tests, bench check
 adapters/      - one per workflow: version, install, prompt template, end of run (B7)
 results/       - committed result rows and reports, one file per series
 .runs/         - local run state (gitignored): budget ledger, raw session output, debug logs, judge prompts

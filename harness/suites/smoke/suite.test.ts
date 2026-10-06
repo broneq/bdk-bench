@@ -1,10 +1,11 @@
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
-import { afterEach, describe, expect, it } from "vitest";
+import { basename, dirname, join } from "node:path";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type { RunOptions } from "../../cli.ts";
 import { HARNESS_ASSERTION_SUFFIX } from "../../hook.ts";
+import { appendRow } from "../../results.ts";
 import { renderSeries } from "../../runner.ts";
 import { SMOKE_PROMPT, describeSmoke, sdkVersion, smokeRunner } from "./suite.ts";
 import type { SmokeDeps, SmokeSpec } from "./suite.ts";
@@ -109,11 +110,15 @@ interface Calls {
   errors: string[];
 }
 
-function harness(assertCommitted: () => void = () => undefined): {
+function harness(
+  assertCommitted: () => void = () => undefined,
+  probeCost?: number,
+): {
   deps: SmokeDeps;
   calls: Calls;
   root: string;
   runs: string;
+  results: string;
 } {
   const dir = tempDir();
   const root = join(dir, "root");
@@ -121,6 +126,10 @@ function harness(assertCommitted: () => void = () => undefined): {
   writeFileSync(
     join(root, "package.json"),
     '{"dependencies":{"@anthropic-ai/claude-agent-sdk":"9.9.9"}}',
+  );
+  writeFileSync(
+    join(root, "versions.json"),
+    JSON.stringify({ fixture: { repository: "r", commit: SHA } }),
   );
   const calls: Calls = {
     assertCommitted: 0,
@@ -142,6 +151,25 @@ function harness(assertCommitted: () => void = () => undefined): {
     },
     evaluate: (_root, config, output) => {
       calls.evaluate.push([config, output]);
+      if (probeCost !== undefined) {
+        const series = basename(dirname(config));
+        appendRow(join(dir, "results", "smoke", `${series}.jsonl`), {
+          suite: "smoke",
+          series,
+          workflow: "plain",
+          item: "hello",
+          run: 1,
+          discarded: null,
+          cost: probeCost,
+          metrics: {},
+          provenance: {
+            models: ["m"],
+            fixtureCommit: SHA,
+            benchCommit: SHA,
+            adapter: { name: "plain", version: "1" },
+          },
+        });
+      }
       return Promise.resolve(0);
     },
     dirs: {
@@ -152,7 +180,7 @@ function harness(assertCommitted: () => void = () => undefined): {
       resultsDir: join(dir, "results"),
     },
   };
-  return { deps, calls, root, runs };
+  return { deps, calls, root, runs, results: join(dir, "results") };
 }
 
 const OPTIONS: RunOptions = {
@@ -176,6 +204,7 @@ describe("smokeRunner", () => {
     expect(code).toBe(0);
     expect(calls.assertCommitted).toBe(0);
     expect(calls.prepareFixture).toHaveLength(1);
+    expect(calls.prepareFixture[0]?.[0]).toEqual({ repository: "r", commit: SHA });
     expect(calls.prepareFixture[0]?.[1]).toBe(join(runs, "cache"));
     expect(calls.evaluate).toHaveLength(1);
     const config = calls.evaluate[0]?.[0] ?? "";
@@ -186,11 +215,46 @@ describe("smokeRunner", () => {
     );
     expect(readConfig(config).tests).toHaveLength(1);
     expect(calls.printed.some((line) => line.startsWith("probe: cost of one run"))).toBe(true);
-    expect(
-      calls.printed.some(
-        (line) => line.includes("for 5 runs") || line.includes("projected series"),
-      ),
-    ).toBe(true);
+  });
+
+  it("projects a probe over the requested runs, not the one run it executed", async () => {
+    const { deps, calls } = harness(undefined, 1.25);
+    const io = {
+      print: (line: string) => calls.printed.push(line),
+      printError: (line: string) => calls.errors.push(line),
+    };
+    await smokeRunner(io, deps).run(OPTIONS);
+    expect(calls.printed).toContain("  plain: 1.25 USD per run, 6.25 USD for 5 runs");
+    expect(calls.printed).toContain("projected series: 6.25 USD; budget left: 10.00 USD of 10 USD");
+  });
+
+  it("names a new series apart from one that already has rows in the results directory", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    try {
+      vi.setSystemTime(new Date("2026-01-02T03:04:05Z"));
+      const { deps, calls, results } = harness();
+      appendRow(join(results, "smoke", "series-2026-01-02-030405.jsonl"), {
+        suite: "smoke",
+        series: "series-2026-01-02-030405",
+        workflow: "plain",
+        item: "hello",
+        run: 1,
+        discarded: null,
+        cost: 1,
+        metrics: {},
+        provenance: {
+          models: ["m"],
+          fixtureCommit: SHA,
+          benchCommit: SHA,
+          adapter: { name: "plain", version: "1" },
+        },
+      });
+      const io = { print: () => undefined, printError: () => undefined };
+      await smokeRunner(io, deps).run({ ...OPTIONS, probe: false });
+      expect(calls.evaluate[0]?.[0]).toContain("series-2026-01-02-030405-2");
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("refuses a series on an uncommitted tree before any other work", async () => {

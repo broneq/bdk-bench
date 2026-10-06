@@ -4,7 +4,7 @@ id: "02"
 title: Ledger, plan, row and shared leaf modules
 goal: The modules with no harness imports exist under harness/ with the bench names, each with its unit tests.
 success-measure: "`npx vitest run harness/budget.test.ts harness/series.test.ts harness/results.test.ts harness/isolation.test.ts harness/stats.test.ts` passes and `npx eslint harness/budget.ts harness/series.ts harness/results.ts harness/isolation.ts harness/judge.ts harness/stats.ts` is clean."
-do-not-touch: ["package.json", "pnpm-lock.yaml", "harness/hook.ts", "harness/provider.ts", "harness/cli.ts"]
+do-not-touch: ["package.json", "pnpm-lock.yaml"]
 depends-on: ["01"]
 spec-impact: [bench-runner]
 ---

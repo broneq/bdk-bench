@@ -158,6 +158,39 @@ describe("regradeSeries", () => {
     ]);
   });
 
+  it("exits 2 when a saved judge is no longer declared, before any judge call", async () => {
+    const { dir, deps } = series([row(1), row(2)], [1, 2]);
+    const file = join(dir, "raw/plain/task-one.run-2/judge.json");
+    const saved = JSON.parse(readFileSync(file, "utf8")) as RecordedJudgement;
+    writeFileSync(file, JSON.stringify({ ...saved, judge: "renamed" }));
+    const requests: JudgeRequest[] = [];
+    const err: string[] = [];
+    expect(await regradeSeries("bench", "m1", deps(requests), io(err))).toBe(2);
+    expect(err[0]).toMatch(/^bench declares no re-gradable judge renamed /);
+    expect(requests).toEqual([]);
+  });
+
+  it("leaves rows and saved judgements unchanged when a judge call fails midway", async () => {
+    const { dir, deps } = series([row(1), row(2)], [1, 2]);
+    const before = readFileSync(join(dir, "m1.jsonl"), "utf8");
+    const savedBefore = readFileSync(join(dir, "raw/plain/task-one.run-1/judge.json"), "utf8");
+    let calls = 0;
+    const failing: RegradeDeps = {
+      ...deps([]),
+      judge: () => {
+        calls++;
+        return calls === 1
+          ? Promise.resolve({ output: { value: 1 }, cost: 0.01, models: ["m"] })
+          : Promise.reject(new Error("judge unavailable"));
+      },
+    };
+    await expect(regradeSeries("bench", "m1", failing, io())).rejects.toThrow(/judge unavailable/);
+    expect(readFileSync(join(dir, "m1.jsonl"), "utf8")).toBe(before);
+    expect(readFileSync(join(dir, "raw/plain/task-one.run-1/judge.json"), "utf8")).toBe(
+      savedBefore,
+    );
+  });
+
   it("exits 2 for a series without rows", async () => {
     const { deps } = series([], []);
     const err: string[] = [];

@@ -3,7 +3,7 @@ schema: 1
 id: L-dkbuyktu
 type: finding
 summary: scope high+ of 2026-10-06-b1-repository-bootstrap-harness drops 17 findings for the review gate
-status: proposed
+status: resolved
 source: kernel
 author: Przemysław Broniszewski <przemek@broniszewski.net>
 at: 2026-10-06T20:36:11.836Z
@@ -27,6 +27,7 @@ refs:
   - L-dqbq4i8b
   - L-k6tfu4n7
 review: true
+level: not-a-problem
 ---
 
 - L-bdw67ijx: assertCommitted lists collapsed untracked dirs (src/), not src/new.ts; test weakened to /src/
@@ -46,3 +47,5 @@ review: true
 - L-rdvhne2g: Risk public-api: new bench CLI, result row JSONL format, ledger and plan file formats
 - L-dqbq4i8b: Risk secrets/auth: credential gate reads ANTHROPIC_API_KEY presence only; sessions run bypassPermissions
 - L-k6tfu4n7: Risk migration: new stored formats (rows, ledger, plan) and fixture cache BASE_FORMAT 3 forcing a rebuild
+
+Triaged as not-a-problem at 2026-10-06T20:46:40.976Z: kernel scope note

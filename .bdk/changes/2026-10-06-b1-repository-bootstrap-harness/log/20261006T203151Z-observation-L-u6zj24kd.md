@@ -11,7 +11,9 @@ ticket: A-qy7ysb9p
 group: p03
 refs:
   - harness/tools.ts
-level: nice-to-have
+review: true
+level: blocker
+disposition: fix
 ---
 
 Problem: harness/tools.ts:18 uses `join(env.HOME ?? "", ".cache")`, which gives the relative path `.cache/bdk-bench/promptfoo` when HOME is unset, while paths.ts SANDBOX_DIR falls back to os.homedir(). Both also treat an empty XDG_CACHE_HOME as set (`??`). The plan fixes the HOME form, so this is not a deviation.
@@ -21,3 +23,5 @@ Why it matters: in an environment without HOME, promptfoo state would land under
 Suggested fix: optional; fall back to os.homedir() in promptfooEnv, or leave as is given the plan.
 
 Triaged as nice-to-have at 2026-10-06T20:35:39.394Z
+
+Decided fix at 2026-10-06T21:15:01.921Z

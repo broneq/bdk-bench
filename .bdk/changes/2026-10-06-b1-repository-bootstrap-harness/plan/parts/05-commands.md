@@ -4,7 +4,7 @@ id: "05"
 title: Commands - cli, series runner, comparison, re-grade
 goal: The bench command line parses its commands against the registered suites, renders and runs a series, compares two series and re-grades saved judge requests.
 success-measure: "`npx vitest run harness/cli.test.ts harness/runner.test.ts harness/compare.test.ts harness/regrade.test.ts` passes, and `npx tsc --noEmit` reports no error in these four modules."
-do-not-touch: ["package.json", "pnpm-lock.yaml", "harness/hook.ts", "harness/provider.ts", "harness/series.ts", "harness/results.ts", "harness/budget.ts"]
+do-not-touch: ["package.json", "pnpm-lock.yaml"]
 depends-on: ["04"]
 spec-impact: [bench-runner]
 ---

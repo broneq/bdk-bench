@@ -74,7 +74,7 @@ function kept<T>(
   return all.filter(([name]) => names.includes(name));
 }
 
-function modelsOf(workflows: readonly [string, WorkflowSetup][]): string {
+function configuredModels(workflows: readonly [string, WorkflowSetup][]): string {
   const models = workflows.map(([, workflow]) => workflow.provider.config.sdk.model);
   return [...new Set(models.filter((model): model is string => typeof model === "string"))].join(
     ",",
@@ -101,7 +101,7 @@ export function renderSeries(setup: SeriesSetup, dir: string): RenderedSeries {
     if (!prompts.has(raw)) prompts.set(raw, name);
   }
   const benchCommit = workflows[0]?.[1].plan.provenance.benchCommit ?? "";
-  const model = modelsOf(workflows);
+  const model = configuredModels(workflows);
   const config = {
     description: `${setup.plan.suite} ${setup.plan.series} bench@${benchCommit.slice(0, 7)} ${model}`,
     tags: { suite: setup.plan.suite, series: setup.plan.series, benchCommit, model },
@@ -185,7 +185,7 @@ export function probeSummary(
   const projected = projection(perWorkflow, runsPerWorkflow);
   const lines = Object.entries(perWorkflow).map(
     ([workflow, cost]) =>
-      `  ${workflow}: ${cost.toFixed(2)} USD per run, ${(projected.perCell[workflow] ?? 0).toFixed(2)} USD for ${String(runsPerWorkflow)} runs`,
+      `  ${workflow}: ${cost.toFixed(2)} USD per run, ${(projected.perWorkflow[workflow] ?? 0).toFixed(2)} USD for ${String(runsPerWorkflow)} runs`,
   );
   const discarded = rows.filter((row) => row.discarded !== null);
   return [

@@ -11,7 +11,9 @@ ticket: A-qy7ysb9p
 group: p03
 refs:
   - harness/paths.ts
-level: nice-to-have
+review: true
+level: blocker
+disposition: fix
 ---
 
 Problem: harness/paths.ts:39 uses `path.startsWith("..")` on the relative path, so a sandbox directory whose first segment merely starts with two dots (e.g. `..cache` inside the repository) would be accepted as outside. The `dir === repoRoot` case throws correctly.
@@ -21,3 +23,5 @@ Why it matters: edge case only; the guard is a safety net for a misconfigured XD
 Suggested fix: optional; compare `path === ".." || path.startsWith(`..${sep}`)`.
 
 Triaged as nice-to-have at 2026-10-06T20:35:39.481Z
+
+Decided fix at 2026-10-06T21:15:02.013Z

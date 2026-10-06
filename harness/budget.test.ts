@@ -79,7 +79,7 @@ describe("per-run cap", () => {
 
 describe("projection", () => {
   it("multiplies each workflow's probe cost by the runs per workflow", () => {
-    expect(projection({ plain: 0.5 }, 5)).toEqual({ perCell: { plain: 2.5 }, total: 2.5 });
+    expect(projection({ plain: 0.5 }, 5)).toEqual({ perWorkflow: { plain: 2.5 }, total: 2.5 });
   });
 });
 

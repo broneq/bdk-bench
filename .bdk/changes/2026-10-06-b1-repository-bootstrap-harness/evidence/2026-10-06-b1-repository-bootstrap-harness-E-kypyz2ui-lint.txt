@@ -1,0 +1,13 @@
+ESLint check:
+exit 0
+
+Prettier check:
+Checking formatting...
+All matched files use Prettier code style!
+exit 0
+
+Typecheck:
+> bdk-bench@ typecheck /Users/broneq/projects/bdk-bench
+> tsc --noEmit
+
+exit 0
