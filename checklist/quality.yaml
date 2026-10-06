@@ -1,0 +1,182 @@
+# Shared code-quality checks. Applied to both tasks unless a task's task.yaml leaves one out.
+# Conventions: see checklist/schema.md ("Diff preparation" defines "the diff", "added lines"
+# and "non-test source"). Judge answers "yes" = pass.
+
+- id: quality.q01
+  group: quality
+  check: ESLint reports no errors and no warnings on the whole repository.
+  verify:
+    kind: command
+    how: >-
+      `npx eslint . --max-warnings=0`; pass on exit status 0. The base commit passes this
+      command, so any warning (for example react-refresh/only-export-components or a
+      react-hooks rule, which the fixture configures) was introduced by the change.
+  source: fixture eslint.config.js (react-hooks recommended rules, react-refresh/only-export-components)
+
+- id: quality.q02
+  group: quality
+  check: >-
+    Added non-test source contains none of the constructs the codebase avoids: the `any` type,
+    a TypeScript `enum`, loose equality (`==` / `!=`), `dangerouslySetInnerHTML` or `innerHTML`
+    assignment, and `export default`.
+  verify:
+    kind: command
+    how: >-
+      `git diff -U0 $BASE -- 'src/**/*.ts' 'src/**/*.tsx' ':(exclude)**/*.test.ts' ':(exclude)**/*.test.tsx'
+      ':(exclude)src/test/**' | grep -E '^\+[^+]' | grep -E
+      '(:\s*any\b|\bas any\b|<any>|\bany\[\]|^\+\s*(export\s+)?(declare\s+)?(const\s+)?enum\s|[^=!<>]==[^=]|!=[^=]|dangerouslySetInnerHTML|\.innerHTML\s*=|export\s+default\b)'`;
+      pass when the output is empty. At the base commit the only `export default` in src is
+      `App`, and none of the other constructs occur.
+  source: BDK-TS-2, BDK-TS-7, BDK-JS-4, BDK-SEC-3, BDK-JS-1
+
+- id: quality.q03
+  group: quality
+  check: >-
+    Added non-test source uses no type assertion (`as T`, other than `as const`) where a type
+    annotation, `satisfies`, a type guard or narrowing would express the same thing.
+  verify:
+    kind: judge
+    how: >-
+      Evidence: diff, plus the output of `git diff -U0 $BASE -- <non-test source pathspecs> |
+      grep -P '^\+(?!\+).*\bas\s+(?!const\b)[A-Za-z(\[{]'` listing every added assertion.
+      Question: "Looking at every type assertion added in non-test code (listed in the command
+      output), is each one unavoidable, meaning no annotation, `satisfies` clause, type guard or
+      control-flow narrowing could replace it without a weaker type? Answer yes if no assertion
+      was added."
+  source: BDK-TS-6, BDK-TS-5
+
+- id: quality.q04
+  group: quality
+  check: >-
+    Comments in the change explain only non-obvious constraints: no commented-out code, no
+    comments that restate the next line, no change narration or ticket references, and no
+    existing comment left stale or grown by appending sentences.
+  verify:
+    kind: judge
+    how: >-
+      Evidence: diff (with surrounding context of each changed comment). Question: "Is every
+      comment added or modified in this diff a statement of a non-obvious constraint, reason or
+      workaround that the code cannot express, with no commented-out code, no restatement of the
+      following line, no narration of the change or reference to a task/ticket id (for example
+      'added for export', 'T-I18N-011', 'new:'), and is every existing comment that the change
+      touched or made inaccurate rewritten as one coherent statement or removed rather than
+      extended with an extra sentence? Answer yes if the change adds or edits no comments."
+  source: BDK-CQ-4, BDK-CQ-5
+
+- id: quality.q05
+  group: quality
+  check: >-
+    New non-rendering logic (serialization, formatting, label mapping, filtering) lives in
+    small pure functions or a module of its own, not inline in JSX or event handlers mixed with
+    rendering, and no function or component takes on a second unrelated responsibility.
+  verify:
+    kind: judge
+    how: >-
+      Evidence: diff, plus full post-change content of changed .tsx files. Question: "Is the
+      logic this change adds that does not render UI (for example turning data into file content
+      or text, mapping identifiers to message keys, choosing which rows to include) written as
+      pure functions that take inputs and return values, separate from component rendering and
+      event wiring, and does each added or grown function/component keep a single
+      responsibility?"
+  source: BDK-CQ-2, BDK-CQ-3, BDK-REACT-11, fixture ROADMAP.md Product Direction ("thin route/page experiences")
+
+- id: quality.q06
+  group: quality
+  check: >-
+    Each fact is expressed once: the change reuses existing helpers and message keys that
+    already carry the same meaning, and does not duplicate a list, mapping or text that another
+    place in the code must keep in sync.
+  verify:
+    kind: judge
+    how: >-
+      Evidence: diff, plus `src/i18n/messages.ts` and the changed files in full. Question: "Does
+      the change avoid creating a second source for a fact that already has one? In particular:
+      (a) where an existing registry key already has the same meaning and English text (for
+      example `ui.operator.title`, `ui.common.window-summary`, `ui.common.unknown`,
+      `ui.route.diagnostics.title`, the existing `ui.admin-users.*` column labels), it is reused
+      instead of duplicated; (b) where existing code already computes something the change needs
+      (for example the admin users list's filter and sort), it is reused rather than
+      reimplemented; (c) a list the change introduces (columns, enum labels) is defined once,
+      with its parts (header and value, identifier and label) kept together."
+  source: BDK-ARCH-5
+
+- id: quality.q07
+  group: quality
+  check: >-
+    The change adds no speculative machinery: no generic abstraction, configuration surface,
+    hook or wrapper with a single caller built "for future use", and no defensive try/catch or
+    fallback around code that cannot fail.
+  verify:
+    kind: judge
+    how: >-
+      Evidence: diff. Question: "Is every abstraction this change introduces (generic
+      utilities, options objects, custom hooks, wrappers, registries, factories) justified by at
+      least two real uses in the code or by real logic it carries, and is every added
+      try/catch, null check or fallback guarding a failure that can actually occur at that
+      point (external input, browser API, network) rather than internal code or a framework
+      guarantee?"
+  source: BDK-ARCH-4, BDK-REACT-13, BDK-CQ-6
+
+- id: quality.q08
+  group: quality
+  check: >-
+    Dependency direction is preserved: the shared layers (`src/api`, `src/i18n`, `src/ui`,
+    `src/routing`) gain no import from a feature area (`src/admin`, `src/operator`,
+    `src/catalog`, `src/account`, `src/auth`).
+  verify:
+    kind: command
+    how: >-
+      `git diff -U0 $BASE -- 'src/api/**' 'src/i18n/**' 'src/ui/**' 'src/routing/**'
+      ':(exclude)**/*.test.ts' ':(exclude)**/*.test.tsx' | grep -E
+      "^\+.*from '\.\./(admin|operator|catalog|account|auth)/"`; pass when the output is
+      empty. At the base commit these layers import no feature module.
+  source: BDK-ARCH-1
+
+- id: quality.q09
+  group: quality
+  check: >-
+    Localized text is used only for display: no added code compares, branches on, or uses as an
+    identity (map key, React `key`, URL or query value, file-content identifier) the output of
+    `t()` or any localized message text.
+  verify:
+    kind: judge
+    how: >-
+      Evidence: diff, plus full post-change content of changed .tsx files. Question: "Is every
+      value produced by `t()` (or taken from localized message text or a backend problem
+      message) used only as text shown to the user or read by assistive technology, and never
+      compared, used in a condition, used as a React `key` or map key, written into the URL or a
+      request, or used to identify a row or column in code? Answer no if, for example, a list
+      now renders `key={label}` where `label` became a translated string."
+  source: fixture docs/DESIGN.md ("Treat localized messages as display content"), docs/backend/FRONTEND_AI_CONTRACT.md (Localization And Errors)
+
+- id: quality.q10
+  group: quality
+  check: >-
+    Every message key the change adds to the registry follows the registry convention:
+    `ui.<area>.<name>` using lowercase letters, digits, dots and hyphens, at most 150
+    characters, with an English default.
+  verify:
+    kind: command
+    how: >-
+      `git diff -U0 $BASE -- src/i18n/messages.ts | grep -E "^\+\s*'" | sed -E
+      "s/^\+\s*'([^']*)'.*/\1/" | grep -vE '^ui\.[a-z0-9-]+\.[a-z0-9._-]+$' ; git diff -U0 $BASE --
+      src/i18n/messages.ts | grep -E "^\+\s*'" | sed -E "s/^\+\s*'([^']*)'.*/\1/" | awk 'length($0) > 150'`;
+      pass when both outputs are empty. (Every added key line also needs a string value, which
+      `npm run typecheck` enforces through the registry's `satisfies Record<string, string>`.)
+  source: fixture src/i18n/messages.ts header comment, src/i18n/messages.test.ts
+
+- id: quality.q11
+  group: quality
+  check: >-
+    The change invents no backend endpoint or request parameter: every `/api/` path literal
+    added to non-test source exists in the imported contract `docs/backend/approved-openapi.json`.
+  verify:
+    kind: command
+    how: >-
+      `node bench/scripts/check-api-literals.mjs $BASE`: the script collects every string or
+      template literal starting with `/api/` on added lines of non-test source, normalises
+      template expressions to `{param}`, strips any query string, and checks the path against
+      the `paths` keys of `docs/backend/approved-openapi.json` (template-aware). It also fails
+      when an added line appends a query parameter (`?`, `URLSearchParams.set/append`) to
+      `ADMIN_USERS_PATH`, which the contract defines without parameters. Pass on exit status 0.
+  source: fixture CONTRIBUTING.md and README.md (Backend Contract), docs/specs/SPEC_admin_user_management.md (Backend Contract)

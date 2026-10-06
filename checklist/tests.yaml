@@ -1,0 +1,125 @@
+# Shared test-quality checks (group `tests`). In agentic coding the tests a workflow writes are
+# what lets the next change trust the code, so they are scored as their own group: do the new
+# tests exist and catch a missing feature (t01), leave the existing tests intact (t02), sit at
+# the right layer (t03), assert real results (t04), catch faults injected into the new code
+# (t05, mutation testing) and execute the lines the change added (t06). Each task adds its own
+# `tests` checks for the risky cases of its spec (tasks/<id>/checks.yaml, ids <task>.t<nn>).
+#
+# Shared definitions used below:
+#   T = test files the change added or modified:
+#       git diff --name-only --diff-filter=AM $BASE -- 'src/**/*.test.ts' 'src/**/*.test.tsx'
+#   S = non-test source files the change added or modified:
+#       git diff --name-only --diff-filter=AM $BASE -- 'src/**/*.ts' 'src/**/*.tsx'
+#       minus *.test.*, src/api/generated/**, src/test/**, src/mock-api/**
+#   L = the added or changed line ranges of S: the `+` hunks of git diff -U0 $BASE -- S
+# All commands run before the hidden tests are copied in, so they see only the workflow's tests.
+
+- id: tests.t01
+  group: tests
+  check: >-
+    The change adds or changes tests for its new behaviour, and those tests would catch its
+    absence: at least one added or changed test fails when the base commit's non-test source is
+    restored.
+  verify:
+    kind: command
+    how: >-
+      `T=$(git diff --name-only --diff-filter=AM $BASE -- 'src/**/*.test.ts' 'src/**/*.test.tsx')`;
+      fail if `T` is empty. Then in a scratch copy: `git checkout $BASE -- src` (restores every
+      base file under src), delete files under `src/` that do not exist at `$BASE` except the
+      files in `T`, copy the final versions of the files in `T` back in, and run
+      `npx vitest run $T --reporter=json`. Pass when the run reports at least one failed test or
+      a failed test file (an import of a module the change added counts as a failure). Tests
+      that only assert behaviour the base already had (for example English text that did not
+      change) pass on the base source and so do not satisfy this check.
+  source: BDK-CQ-7, BDK-TQ-1, fixture ROADMAP.md Product Direction ("Add tests at the smallest useful layer for each user-visible behavior")
+
+- id: tests.t02
+  group: tests
+  check: The base commit's own tests still pass, unmodified, against the final source.
+  verify:
+    kind: command
+    how: >-
+      In a scratch copy: `B=$(git ls-tree -r --name-only $BASE -- src | grep -E '\.test\.tsx?$')`,
+      `git checkout $BASE -- $B`, then `npx vitest run $B`; pass on exit status 0. This catches
+      deleted, skipped or weakened existing tests and regressions in behaviour the existing tests
+      pin (for example the English text of every keyed string, the admin users list, filters and
+      pagination).
+  source: fixture CONTRIBUTING.md (contract-first; update the owning test alongside behaviour), docs/DEVELOPMENT_LIFECYCLE.md (Review And Close Out)
+
+- id: tests.t03
+  group: tests
+  check: >-
+    Each new behaviour is tested at the smallest layer that can observe it: pure logic the
+    change adds is tested directly, and the page wiring is covered by at least one rendered-page
+    test.
+  verify:
+    kind: judge
+    how: >-
+      Evidence: diff and added-tests. Question: "For the behaviour this change adds, is there a
+      direct test of each non-trivial pure function or module it introduces (for example a
+      serializer or a label mapping), and at least one test that renders the affected page and
+      exercises the new behaviour through the UI? Answer yes also when the change adds no pure
+      logic and the page-level tests cover the behaviour."
+  source: fixture ROADMAP.md Product Direction ("Add tests at the smallest useful layer"), docs/WORKING_WITH_AI.md, BDK-CQ-7
+
+- id: tests.t04
+  group: tests
+  check: >-
+    Every added or changed test asserts an observable result of the code under test, and none
+    is a constant mirror, a type mirror, an existence/introspection check, an interaction-only
+    assertion or a shape-only assertion.
+  verify:
+    kind: judge
+    how: >-
+      Evidence: added-tests, plus the code they exercise. Question: "Does every test case added
+      or changed in this diff assert a concrete observable result (rendered text or attributes,
+      produced file or string content, URL, request sent, returned value) such that a plausible
+      wrong implementation would fail it, with none of these: asserting a constant or registry
+      entry equals its own literal definition; asserting a value's type that the signature
+      already declares; asserting only that a symbol exists, is a function or a module loads;
+      asserting only that a mock or spy was called without checking what was produced; asserting
+      only lengths, keys or presence without checking any value? Checks on generated text,
+      rendered output, file content and contract strings are allowed."
+  source: BDK-TQ-1, BDK-TQ-2, BDK-TQ-3, BDK-TQ-4, BDK-TQ-5, BDK-TQ-6 (allowances BDK-TQ-7, BDK-TQ-8, BDK-TQ-9, BDK-TQ-10)
+
+- id: tests.t05
+  group: tests
+  check: >-
+    The new tests catch faults injected into the new code: their mutation score on the lines
+    the change added or changed is at least 60%.
+  verify:
+    kind: command
+    how: >-
+      Fail if T or S is empty. Run StrykerJS with the vitest runner (versions pinned by the
+      grader; the probe in B3 confirms support for the fixture's vitest 4) from the working
+      tree with a grader-written config: `mutate` = one `<file>:<start>-<end>` entry per range
+      of L; the vitest runner restricted to T (a grader-written vitest config whose `include`
+      is T, extending the fixture's vite.config.ts); `coverageAnalysis: perTest`;
+      `reporters: [json]`; a 20-minute timeout. Score = (killed + timeout) / (killed + timeout
+      + survived + noCoverage), mutants with compile errors excluded. Pass when the score is at
+      least 0.60. The threshold is provisional: B5 and B6 calibrate it so that the reference
+      solution's own tests clear it with a margin. When Stryker fails because a test in T fails
+      on the unmutated code, the check fails; when it fails before any mutant ran for a reason
+      outside the change (grader crash, timeout of the dry run on a clean tree), it is a grader
+      error and the run is re-graded, not scored. The run's details list every survived and no-coverage
+      mutant (file, line, mutator, original and replacement code), so a missing test variant is
+      visible, not only the percentage.
+  source: BDK-TQ-1 (tests name the behaviour that would break), fixture ROADMAP.md Product Direction ("Add tests at the smallest useful layer for each user-visible behavior")
+
+- id: tests.t06
+  group: tests
+  check: >-
+    The new tests execute at least 80% of the executable lines and at least 70% of the branches
+    the change added or changed in source files.
+  verify:
+    kind: command
+    how: >-
+      Fail if T or S is empty. `npx vitest run $T --coverage --coverage.provider=v8
+      --coverage.reporter=json --coverage.include=<each file of S> --coverage.reportsDirectory=<out>`,
+      then `node bench/scripts/diff-coverage.mjs $BASE <out>/coverage-final.json`: the script
+      takes L and reports (a) covered / total of the statements that start on a line of L and
+      (b) covered / total of the branch arms (`branchMap` / `b`) whose location starts on a line
+      of L, so `if (a || b)` on one line counts each arm. Pass when (a) is at least 0.80 and (b)
+      is at least 0.70; a ratio with no item in L counts as met. Only T runs, so code covered
+      only by the base tests does not count.
+  source: BDK-CQ-7, fixture vite.config.ts (coverage provider v8)

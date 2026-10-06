@@ -1,0 +1,384 @@
+# Functional checks for users-csv. Harness helpers (H-admin, H-download, H-csv, H-i18n) are
+# defined in checklist/schema.md. All tests except f20 (a Playwright script) live in
+# src/__bench__/users-csv.test.tsx and run with
+# TZ=America/New_York. Each test calls installDownloadCapture() before acting.
+#
+# EXPORT_BUTTON = screen.getByRole('button', { name: /export|csv/i })
+#   (the pattern also matches the pseudo-localized label "⟦Export CSV⟧").
+#
+# exportUsers() (H-admin), every user built with createAdminUser(overrides):
+#   u7  { id: 7,  displayName: 'Admin User', login: 'admin-user', email: 'admin@example.test',
+#         provider: 'github', roles: ['USER','ADMIN'], accountStatus: 'ACTIVE',
+#         lastLoginAt: '2026-06-06T22:10:00Z', createdAt: '2026-05-11T12:00:00Z' }
+#   u8  { id: 8,  displayName: 'Reviewer User', login: 'reviewer', email: 'reviewer@example.test',
+#         roles: ['USER'] }
+#   u9  { id: 9,  displayName: 'Doe, "Jay"', login: 'jay', email: 'jay@example.test' }
+#   u10 { id: 10, displayName: '=HYPERLINK("http://evil.test","x")', login: '\tcmd',
+#         email: 'formula@example.test', provider: '+provider' }
+#   u11 { id: 11, displayName: 'Zażółć Gęślą', login: 'anne-marie', email: "o'brien@example.test",
+#         provider: 'google', preferredLanguage: 'pl', accountStatus: undefined,
+#         lastLoginAt: undefined }
+#   u12 { id: 12, displayName: 'Line one\nLine two', login: 'blocked-user',
+#         email: 'blocked@example.test', accountStatus: 'BLOCKED', blockedAt: '2026-06-10T15:00:00Z',
+#         blockedBy: 'owner-admin', blockedReason: 'Spam, see "ticket"' }
+#   u13 { id: 13, displayName: '@SUM(A1:A2)', login: '-10', email: 'minus@example.test' }
+#
+# Columns are located with H-csv column() using these English header patterns:
+#   ID /^(user )?id$/, NAME /^(display )?name$/, LOGIN /^login( name)?$/, EMAIL /^e-?mail$/,
+#   PROVIDER /^provider$/, ROLES /^roles?$/, STATUS /^(account )?status$/,
+#   LAST_LOGIN /^last (login|sign-in)$/
+# Rows are located by the ID column value.
+
+- id: users-csv.f01
+  group: functional
+  check: >-
+    Once the list has loaded, an administrator sees an export control: a native
+    `<button type="button">` whose accessible name mentions export or CSV.
+  verify:
+    kind: test
+    how: >-
+      mockAdminUsersFetch({ users: createUsers() }); renderAdminUsers(); await
+      screen.findByText('Admin User'). Assert EXPORT_BUTTON exists exactly once, its tagName is
+      BUTTON, its `type` attribute is `button`, and it is enabled.
+  source: spec.md#where-and-how-it-looks, spec.md#accessibility, BDK-REACT-7
+
+- id: users-csv.f02
+  group: functional
+  check: >-
+    Activating the control downloads exactly one CSV file and leaves no trace: the route, query
+    and selection are unchanged, no download anchor stays in the document, and a created object
+    URL is revoked.
+  verify:
+    kind: test
+    how: >-
+      mockAdminUsersFetch({ users: exportUsers() }); const { router } =
+      renderAdminUsers('/admin/users/8?role=USER'); await findByText('Reviewer User'); remember
+      router.state.location (pathname + search); fireEvent.click(EXPORT_BUTTON). Within 1 s:
+      downloads() has length 1; its `mime` matches /^text\/csv/i; its `fileName` ends with
+      `.csv`; router.state.location pathname and search are unchanged; the inline detail region
+      'User detail' is still rendered; strayAnchors() is empty; and when the href is a `blob:`
+      URL, `revoked` is true.
+  source: spec.md#download-mechanics
+
+- id: users-csv.f03
+  group: functional
+  check: >-
+    The file name ends in `.csv` and names what it holds; a date in it, if any, is the local
+    calendar date of the export.
+  verify:
+    kind: test
+    how: >-
+      vi.useFakeTimers({ toFake: ['Date'] }); vi.setSystemTime(new Date(2026, 9, 6, 23, 30))
+      (local time; with TZ=America/New_York that is 2026-10-07T03:30Z). Render with
+      createUsers(), click EXPORT_BUTTON. Assert downloads()[0].fileName ends with `.csv` and
+      matches /user/i; when it contains a date of the form \d{4}-?\d{2}-?\d{2}, that date is
+      2026-10-06 (a UTC-based date gives the 7th and fails).
+  source: spec.md#file-name
+
+- id: users-csv.f04
+  group: functional
+  check: The file is UTF-8 and non-ASCII names survive byte for byte.
+  verify:
+    kind: test
+    how: >-
+      Render with exportUsers(), click EXPORT_BUTTON. Decode the bytes as UTF-8 (a leading byte
+      order mark is accepted and stripped); parseCsv(text) yields a NAME cell equal to
+      'Zażółć Gęślą' for id 11.
+  source: spec.md#file-format
+
+- id: users-csv.f05
+  group: functional
+  check: >-
+    The file is well-formed CSV: comma-delimited, a header record first, every record with the
+    header's field count, and one line terminator (LF or CRLF) used throughout.
+  verify:
+    kind: test
+    how: >-
+      Render with exportUsers(), click EXPORT_BUTTON. parseCsv(text) does not throw; records[0]
+      has at least 8 fields and contains no value that looks like data (no cell equals an id or
+      an email of exportUsers()); every record has records[0].length fields; the entries of
+      `terminators` are all '\n' or all '\r\n' (the last record may have none); the number
+      of data records equals the number of users (7).
+  source: spec.md#file-format
+
+- id: users-csv.f06
+  group: functional
+  check: >-
+    The file contains the core user fields the list shows: ID, display name, login, email,
+    provider, roles, account status and last login, each with the right value.
+  verify:
+    kind: test
+    how: >-
+      Render with exportUsers(), click EXPORT_BUTTON, parseCsv. Each of the eight English header
+      patterns (ID, NAME, LOGIN, EMAIL, PROVIDER, ROLES, STATUS, LAST_LOGIN) matches exactly one
+      header cell (column() does not throw). For id 7: NAME 'Admin User', LOGIN 'admin-user',
+      EMAIL 'admin@example.test', PROVIDER 'github'; for id 8: EMAIL 'reviewer@example.test'.
+  source: spec.md#columns
+
+- id: users-csv.f07
+  group: functional
+  check: >-
+    The file holds no internal data the list does not show: no role grant history or grant
+    sources.
+  verify:
+    kind: test
+    how: >-
+      Render with exportUsers(), click EXPORT_BUTTON, parseCsv. No cell of any record contains
+      'AUTHENTICATED_LOGIN' or 'ADMIN_MANAGED' (role grant sources present in createRoleGrant
+      data).
+  source: spec.md#columns, BDK-SEC-8
+
+- id: users-csv.f08
+  group: functional
+  check: The export contains every user matching the current filters across all pages, not only the visible page.
+  verify:
+    kind: test
+    how: >-
+      Users: 12 users built like the base test 'filters, sorts, and paginates the user list
+      client-side' (ids 100-111, 'Listed User 01'..'Listed User 12'). renderAdminUsers('/admin/users?page=1')
+      (second page of 10), await findByText('Listed User 11'), click EXPORT_BUTTON. parseCsv:
+      12 data records whose ID cells are exactly the set 100..111.
+  source: spec.md#what-is-exported
+
+- id: users-csv.f09
+  group: functional
+  check: >-
+    Which users are exported is consistent: either exactly the users matching the current
+    search, role and status filters, or always the whole list, never a mix.
+  verify:
+    kind: test
+    how: >-
+      Three renders with exportUsers(), each clicking EXPORT_BUTTON after the table shows:
+      (a) '/admin/users?role=ADMIN', (b) '/admin/users?status=BLOCKED', (c) '/admin/users?q=doe'.
+      Pass when the ID cells are exactly ['7'], ['12'] and ['9'] respectively, or when all
+      three exports hold the full set of 7 ids.
+  source: spec.md#what-is-exported
+
+- id: users-csv.f10
+  group: functional
+  check: Every exported user appears exactly once.
+  verify:
+    kind: test
+    how: >-
+      renderAdminUsers('/admin/users?sort=email,DESC&size=50') with exportUsers(); after the
+      table renders, click EXPORT_BUTTON and parseCsv. The ID cells of the data records hold no
+      duplicate and number 7.
+  source: spec.md#what-is-exported
+
+- id: users-csv.f11
+  group: functional
+  check: >-
+    Roles list every role of the user in one field, and the account status is stated, empty or
+    unknown when the API gives none.
+  verify:
+    kind: test
+    how: >-
+      Render with exportUsers(), click EXPORT_BUTTON, parseCsv. ROLES cell of id 7 contains
+      'USER' and 'ADMIN' (case-insensitive, any separator); of id 8 contains 'USER' and not
+      'ADMIN'. STATUS cell of id 7 matches /active/i, of id 12 matches /blocked/i, and of id 11
+      matches neither.
+  source: spec.md#value-formats
+
+- id: users-csv.f12
+  group: functional
+  check: >-
+    Timestamps give the API instant, and missing values are not rendered as programming
+    artifacts.
+  verify:
+    kind: test
+    how: >-
+      Render with exportUsers(), click EXPORT_BUTTON, parseCsv. LAST_LOGIN cell of id 7 is
+      non-empty and either Date.parse(cell) is within 60 s of Date.parse('2026-06-06T22:10:00Z')
+      or the cell contains the local date and time of that instant in New York (2026-06-06 or
+      6/6/2026, and 18:10 or 6:10 PM). No cell anywhere equals or contains (case-insensitive)
+      'undefined', 'null', 'NaN' or 'Invalid Date'.
+  source: spec.md#value-formats
+
+- id: users-csv.f13
+  group: functional
+  check: Values containing a comma, a double quote or a line break are quoted and escaped so they round-trip unchanged.
+  verify:
+    kind: test
+    how: >-
+      Render with exportUsers(), click EXPORT_BUTTON. The raw text contains `"Doe, ""Jay"""`;
+      parseCsv yields NAME of id 9 === 'Doe, "Jay"' and NAME of id 12 equal to 'Line one\nLine
+      two' (a CRLF inside the field is accepted in place of LF); the record count is still 7
+      data records (the embedded newline did not split a record).
+  source: spec.md#file-format, BDK-SEC-3
+
+- id: users-csv.f14
+  group: functional
+  check: >-
+    Values that a spreadsheet would run as a formula (starting with `=`, `+`, `-`, `@`, tab or
+    CR) are neutralised, keeping the original text readable.
+  verify:
+    kind: test
+    how: >-
+      Render with exportUsers(), click EXPORT_BUTTON, parseCsv. For NAME of id 10, LOGIN of id
+      10, PROVIDER of id 10, NAME of id 13 and LOGIN of id 13: the parsed cell does not start
+      with any of = + - @ \t \r, and it still contains the original value with its first
+      character (for example `=HYPERLINK("http://evil.test","x")` appears in the cell after a
+      prefix).
+  source: spec.md#file-format, BDK-SEC-2, BDK-SEC-3
+
+- id: users-csv.f15
+  group: functional
+  check: Values that only contain those characters later, or contain quotes and non-ASCII letters, are written unchanged.
+  verify:
+    kind: test
+    how: >-
+      Render with exportUsers(), click EXPORT_BUTTON, parseCsv. LOGIN of id 11 === 'anne-marie';
+      EMAIL of id 11 === "o'brien@example.test"; EMAIL of id 7 === 'admin@example.test'; ID of
+      the first data record does not start with "'"; LAST_LOGIN of id 7 does not start with
+      "'"; NAME of id 11 === 'Zażółć Gęślą'.
+  source: spec.md#file-format
+
+- id: users-csv.f16
+  group: functional
+  check: >-
+    The export is offered only to an administrator with a loaded, non-empty result: it is
+    unavailable while loading, after a load error, for an empty list or no matches, and absent
+    for non-admins and signed-out visitors.
+  verify:
+    kind: test
+    how: >-
+      Six renders; in each, "unavailable" means queryByRole('button', { name: /export|csv/i }) is
+      null or disabled, and clicking it if present yields downloads().length === 0.
+      (a) mockAdminUsersFetch({ pendingUsers: true }) -> unavailable while 'Loading users' shows;
+      (b) users: problemResponse(403, 'Brak dostepu.') -> after the alert shows, unavailable;
+      (c) users: [] -> after 'No users returned' shows, unavailable;
+      (d) '/admin/users?q=zzz-no-match' with exportUsers() -> after the no-match state shows,
+      unavailable, or the export holds the full list (the f09 choice of exporting everything);
+      (e) account: createAccount({ roles: ['USER'] }) -> after 'Admin role required', absent;
+      (f) renderAdminUsers('/admin/users', createSession({ authenticated: false })) -> absent.
+  source: spec.md#states, spec.md#who-can-export, BDK-SEC-5, BDK-SEC-7
+
+- id: users-csv.f17
+  group: functional
+  check: The export control's label comes from the localization registry.
+  verify:
+    kind: test
+    how: >-
+      renderWithCatalog(<RouterProvider ... AdminUsersPage>, { rows: pseudoRows() }) with
+      mockAdminUsersFetch({ account: createAccount({ preferredLanguage: 'pl' }), users:
+      createUsers(), catalog: catalogPage(pseudoRows()) }) (the account preference must be `pl`,
+      because the provider re-resolves the language from the account). After the table renders,
+      the accessible name of EXPORT_BUTTON, with all ⟦...⟧ segments removed, contains no letters
+      (/\p{L}/u does not match).
+  source: spec.md#localization, fixture docs/DESIGN.md (UI language)
+
+- id: users-csv.f18
+  group: functional
+  check: The header labels are words a person reads, not code identifiers.
+  verify:
+    kind: test
+    how: >-
+      Render with exportUsers(), click EXPORT_BUTTON, parseCsv. No header cell matches
+      /^[a-z]+[A-Z]\w*$/ (camelCase such as `displayName`, `accountStatus`, `lastLoginAt`) or
+      /^[a-z]+_[a-z_]+$/ (snake_case).
+  source: spec.md#columns
+
+- id: users-csv.f19
+  group: functional
+  check: The export reflects changes made on the page in this session.
+  verify:
+    kind: test
+    how: >-
+      mockAdminUsersFetch({ users: exportUsers(), replaceStatusResponse:
+      createAdminUser({ ...u8, accountStatus: 'BLOCKED', blockedAt: '2026-06-11T10:00:00Z',
+      blockedBy: 'admin-user', blockedReason: 'Spam activity' }) }); renderAdminUsers('/admin/users/8');
+      in the form 'Replace account status for Reviewer User' type 'Spam activity' into
+      'Operator reason' and click 'Block user'; wait for 'Account status updated.'. Click
+      EXPORT_BUTTON (a refetch is allowed; a refetch returns the updated user). Assert the
+      STATUS cell of id 8 matches /blocked/i.
+  source: spec.md#what-is-exported
+
+- id: users-csv.f20
+  group: functional
+  check: In a real browser, an administrator downloads the CSV file from the users page.
+  verify:
+    kind: command
+    how: >-
+      `node bench/e2e/users-csv-download.mjs`; pass on exit status 0. The hidden script, copied
+      into the working tree after the session, uses the fixture's own `scripts/with-vite.mjs`
+      (`withViteServer`, mode `mock`) and Playwright Chromium, signs in as the mock admin the
+      way `scripts/smoke-authenticated-mock.mjs` does (the anonymous session's login provider,
+      then the admin session), opens `/admin/users`, waits for the heading 'User
+      administration', then `page.waitForEvent('download')` while clicking
+      getByRole('button', { name: /export|csv/i }). It asserts: the download's
+      suggestedFilename ends with `.csv`; the saved file decodes as UTF-8 and parses with
+      H-csv; it has a header record and one data record per user that `GET /api/admin/users`
+      (fetched from the page with the same session) returns for the default list view; and a
+      record holds the mock admin's login `admin-user`. It catches what jsdom only simulates: a
+      download the browser never starts, a wrong MIME type, a revoked URL before the download.
+  source: spec.md#download-mechanics, fixture scripts/smoke-authenticated-mock.mjs
+
+- id: users-csv.t01
+  group: tests
+  check: The workflow's tests cover CSV escaping of a comma, a double quote and a line break.
+  verify:
+    kind: judge
+    how: >-
+      Evidence: added-tests and the code they exercise. Question: "Does at least one test added
+      or changed in this diff export or serialize a value containing a comma, one containing a
+      double quote and one containing a line break, and assert the exact output text or the
+      parsed value for each?"
+  source: spec.md#file-format, BDK-SEC-3
+
+- id: users-csv.t02
+  group: tests
+  check: The workflow's tests cover the formula guard for each trigger character.
+  verify:
+    kind: judge
+    how: >-
+      Evidence: added-tests and the code they exercise. Question: "Taken together, do the tests
+      added or changed in this diff export or serialize a value starting with each of = + - and
+      @ (four cases, in one test or several) and assert how each is neutralised in the output?"
+  source: spec.md#file-format, BDK-SEC-2
+
+- id: users-csv.t03
+  group: tests
+  check: The workflow's tests pin which users are exported (filters, all pages).
+  verify:
+    kind: judge
+    how: >-
+      Evidence: added-tests and the code they exercise. Question: "Does at least one test added
+      or changed in this diff render the page with more users than one page shows, or with an
+      active search or filter, trigger the export and assert which users the file contains?"
+  source: spec.md#what-is-exported
+
+- id: users-csv.t04
+  group: tests
+  check: The workflow's tests cover every state in which the export is unavailable.
+  verify:
+    kind: judge
+    how: >-
+      Evidence: added-tests and the code they exercise. Question: "Taken together, do the tests
+      added or changed in this diff assert that the export control is disabled or absent in
+      each of these four states: the list is loading, the list failed to load, the list is
+      empty, and no user matches the current search or filters (or, when the export always
+      holds the whole list, that the control is unavailable when the list is empty)?"
+  source: spec.md#states
+
+- id: users-csv.t05
+  group: tests
+  check: The workflow's tests drive the export through the page as a user does.
+  verify:
+    kind: judge
+    how: >-
+      Evidence: added-tests. Question: "Does at least one test added or changed in this diff
+      render the admin users page, activate the export control the way a user would (finding it
+      by role or label and clicking it), and assert on the produced file's content rather than
+      only that a function was called?"
+  source: fixture ROADMAP.md Product Direction ("Add tests at the smallest useful layer for each user-visible behavior"), BDK-TQ-3
+
+- id: users-csv.t06
+  group: tests
+  check: The workflow's tests cover who may not export.
+  verify:
+    kind: judge
+    how: >-
+      Evidence: added-tests and the code they exercise. Question: "Does at least one test added
+      or changed in this diff render the users page for a signed-in user without the admin role
+      or for a signed-out visitor and assert that no export control is offered?"
+  source: spec.md#who-can-export, BDK-SEC-5

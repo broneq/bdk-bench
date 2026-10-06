@@ -1,0 +1,155 @@
+# Shared outcome-hygiene checks. Each task's task.yaml lists the ones that apply.
+# Conventions: see checklist/schema.md ("Diff preparation"). Judge answers "yes" = pass.
+# Command checks that need a scratch copy run in `cp -R <final tree> $SCRATCH`, never in place.
+
+- id: process.p01
+  group: process
+  check: The project's full test suite passes.
+  verify:
+    kind: command
+    how: >-
+      `npm test` (the fixture's `vitest run`, hidden tests not yet copied in); pass on exit
+      status 0. The base commit passes (28 files, 304 tests).
+  source: fixture docs/specs/SPEC_admin_user_management.md (Required Tests, validation list), docs/LOCAL_DEVELOPMENT.md
+
+- id: process.p02
+  group: process
+  check: The typecheck (including the generated API type freshness check) and the production build pass.
+  verify:
+    kind: command
+    how: >-
+      `npm run typecheck && npm run build`; pass on exit status 0. `typecheck` runs
+      `api:types:check` (generated `src/api/generated/openapi.ts` must still match the contract)
+      and `tsc -b`; `build` runs `tsc -b && vite build`.
+  source: fixture package.json scripts, docs/specs/SPEC_admin_user_management.md (validation list)
+
+- id: process.p03
+  group: process
+  check: Lint (ESLint and the Markdown rules) passes and the diff has no whitespace errors.
+  verify:
+    kind: command
+    how: >-
+      `npm run lint && git diff --check $BASE`; pass on exit status 0. `lint` runs the
+      fixture's Markdown checks (line endings, Mermaid, markdownlint with the aligned-tables and
+      no-hard-wrapped-prose rules, which apply to edited docs and CHANGELOG.md) and `eslint .`.
+  source: fixture package.json scripts, .markdownlint-cli2.mjs, docs/specs/SPEC_admin_user_management.md (validation list)
+
+- id: process.p06
+  group: process
+  check: >-
+    Every changed path is inside the task's scope allow-list and none is in the global
+    forbidden list (generated API types, imported backend contract, package manifest and
+    lockfile, build and lint configuration, CI, infrastructure, scripts).
+  verify:
+    kind: command
+    how: >-
+      `git diff --name-status $BASE` (after diff preparation); pass when every modified,
+      deleted or renamed-from path matches a glob in the task's `scope.allowed` (task.yaml),
+      every added path matches a glob in `scope.new_files` or `scope.allowed`, and no path
+      matches `scope.forbidden` (task.yaml), which always includes `src/api/generated/**`,
+      `docs/backend/**`, `package.json`, `package-lock.json`, `tsconfig*.json`, `vite.config.ts`,
+      `eslint.config.js`, `.markdownlint-cli2.mjs`, `.github/**`, `infra/**`, `docker/**`,
+      `scripts/**`, `Dockerfile`, `bundle-budget.config.json`.
+  source: BDK-CQ-9, BDK-SEC-9, BDK-TS-11, fixture README.md and CONTRIBUTING.md (backend contract artifacts are imported, generated types refreshed only through the contract workflow)
+
+- id: process.p07
+  group: process
+  check: The diff contains no change unrelated to the task.
+  verify:
+    kind: judge
+    how: >-
+      Evidence: diff, plus the task's prompt and the one-paragraph task summary from task.yaml
+      (`summary`). Question: "Is every hunk in this diff needed for, or a direct consequence of,
+      the task described (including its tests and the documentation the repository expects for
+      it), with no unrelated refactoring, reformatting of untouched code, renames, style churn,
+      or fixes to other features?"
+  source: 'fixture docs/DEVELOPMENT_LIFECYCLE.md (Implement: "Keep the change scoped to the requested behavior and make the smallest coherent edit")'
+
+- id: process.p08
+  group: process
+  check: >-
+    No debugging or work-in-progress leftovers: no `console.*` call or `debugger` in non-test
+    source, no focused or skipped tests, no TODO/FIXME/XXX markers, and no stray files
+    (logs, screenshots, scratch scripts, backup copies).
+  verify:
+    kind: command
+    how: >-
+      `git diff -U0 $BASE -- src | grep -E '^\+[^+]' | grep -E
+      '(\bconsole\.(log|debug|info|warn|error|trace)\(|\bdebugger\b|\b(it|test|describe)\.(only|skip|todo)\(|\bx(it|describe)\(|\b(TODO|FIXME|XXX)\b)'`
+      must print nothing (test files may still call `vi.spyOn(console, ...)`, which does not
+      match); and `git diff --name-only --diff-filter=A $BASE | grep -E
+      '\.(log|png|jpe?g|webm|zip|orig|rej|bak|tmp)$|(^|/)(tmp|temp|scratch)/'` must print
+      nothing. Pass when both are empty.
+  source: fixture docs/DEVELOPMENT_LIFECYCLE.md (Review And Close Out), .gitignore
+
+- id: process.p09
+  group: process
+  check: >-
+    `CHANGELOG.md` gains an entry for the user-visible change under `## [Unreleased]`, and no
+    released section is edited.
+  verify:
+    kind: command
+    how: >-
+      `node bench/scripts/check-changelog.mjs $BASE`: the script diffs `CHANGELOG.md`, requires
+      at least one added line starting with `- ` located between the `## [Unreleased]` heading
+      and the next `## [` heading, and requires that no added or removed line falls inside any
+      versioned section (`## [0.5.0]` and older). Pass on exit status 0.
+  source: 'fixture CHANGELOG.md header ("Release entries stay under Unreleased"), docs/DEVELOPMENT_LIFECYCLE.md (Artifact Routing: shipped user-visible history)'
+
+- id: process.p10
+  group: process
+  check: >-
+    The owning behaviour spec describes the new behaviour (users-csv: the export is added to
+    `docs/specs/SPEC_admin_user_management.md`, which today says what the surface does and
+    does not do, with its required tests).
+  verify:
+    kind: judge
+    how: >-
+      Evidence: the diff of `docs/specs/SPEC_admin_user_management.md` and the hidden spec
+      summary from task.yaml. Question: "Does the updated admin user management spec now state
+      that administrators can export the user list to CSV, including what rows and columns the
+      file contains and the main rules for the file (format, which users), consistently with the
+      implementation in this diff, and does it list the tests that cover the export?"
+  source: 'fixture CONTRIBUTING.md ("update the owning spec, doc, or test alongside implementation when user-visible behavior ... changes"), docs/DEVELOPMENT_LIFECYCLE.md (Artifact Routing: UI behavior -> docs/specs/ when broad)'
+
+- id: process.p12
+  group: process
+  check: The final reply claims nothing that the repository state or the command results contradict.
+  verify:
+    kind: judge
+    how: >-
+      Evidence: reply, diff, command-outputs (p01-p03 and the hidden test results). Question:
+      "Is every factual claim in the final reply about what was changed, what was tested, which
+      commands pass and what the feature does consistent with the diff and the command outputs?
+      Answer no if the reply claims a test, file, behaviour or passing command that the evidence
+      does not show, or reports success for something that fails."
+  source: fixture docs/WORKING_WITH_AI.md ("The final handoff should list validation commands, results, skipped checks")
+
+- id: process.p13
+  group: process
+  check: >-
+    The final reply reports which validation was run with its result, and names anything
+    unfinished, skipped, untested or left as a follow-up.
+  verify:
+    kind: judge
+    how: >-
+      Evidence: reply, diff, command-outputs. Question: "Does the final reply (a) say which
+      validation commands or test runs were performed and their results, and (b) explicitly
+      name every part of the request that is not done or not verified (skipped validation with
+      its reason, untested behaviour, known gaps, follow-ups owned by someone else), or state
+      clearly that nothing is left? Answer no if the evidence shows a gap (for example a failing
+      command, a requirement visibly not implemented) that the reply does not mention."
+  source: 'fixture CONTRIBUTING.md (Validation: "Report skipped checks with the reason in handoff"), docs/WORKING_WITH_AI.md, BDK-TQ-11'
+
+- id: process.p14
+  group: process
+  check: The fixture's accessibility gate passes.
+  verify:
+    kind: command
+    how: >-
+      Once per grader environment `npx playwright install chromium`; then `npm run a11y` from
+      the working tree; pass on exit status 0. The script starts Vite in mock mode itself and
+      runs axe-core in light and dark mode on the catalog/home, account and admin users routes,
+      so it scans the users page the export changes; for operator-i18n it guards against
+      regressions only. The fixture's CI runs the same command.
+  source: fixture .github/workflows/ci.yml (Accessibility step), scripts/a11y.mjs, BDK-REACT-7
