@@ -12,6 +12,7 @@ area:
 roadmap:
   milestone: M-I18N-004
   tasks: [T-I18N-011, T-I18N-012, T-I18N-013]
+# Hidden: the spec's answers in short. Choices here are what the simulated user answers, not pass conditions.
 summary: >-
   Implement ROADMAP.md milestone M-I18N-004: route every user-visible string on /operator and
   /operator/diagnostics (labels, options, headings, captions, aria-labels, summaries, state
@@ -25,7 +26,7 @@ fixture:
   repository: https://github.com/kamkie/technical-interview-frontend
   upstream_commit: 946a2081f84381ffc3b4a494467479a5b6886ead
   # Same base as users-csv: the upstream commit with the agent instructions removed.
-  base: upstream_commit minus agent instructions (marker file .bdk-eval-base)
+  base: upstream_commit minus agent instructions (marker file .bench-base)
   setup: npm ci
   node: 24.x
   npm: 11.x
@@ -94,7 +95,6 @@ applies:
     - process.p09
     # process.p10 (owning behaviour spec) is users-csv only: the operator audit spec does not
     # describe chrome text, so the roadmap milestone is the owning artifact here.
-    - process.p11
     - process.p12
     - process.p13
 

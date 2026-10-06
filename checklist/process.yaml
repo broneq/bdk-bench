@@ -144,16 +144,6 @@
       implementation in this diff, and does it list the tests that cover the export?"
   source: 'fixture CONTRIBUTING.md ("update the owning spec, doc, or test alongside implementation when user-visible behavior ... changes"), docs/DEVELOPMENT_LIFECYCLE.md (Artifact Routing: UI behavior -> docs/specs/ when broad)'
 
-- id: process.p11
-  group: process
-  check: The workflow made no commit; the branch still points at the base commit and the change is left in the working tree.
-  verify:
-    kind: command
-    how: >-
-      `test "$(git rev-parse HEAD)" = "$BASE"`; pass on exit status 0. The prompt never
-      authorizes a commit.
-  source: 'fixture CONTRIBUTING.md (Commits: "Do not commit unless the current task authorizes it")'
-
 - id: process.p12
   group: process
   check: The final reply claims nothing that the repository state or the command results contradict.

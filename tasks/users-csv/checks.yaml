@@ -61,42 +61,43 @@
 
 - id: users-csv.f03
   group: functional
-  check: The file is named `users-YYYY-MM-DD.csv` with the local calendar date of the export.
+  check: >-
+    The file name ends in `.csv` and names what it holds; a date in it, if any, is the local
+    calendar date of the export.
   verify:
     kind: test
     how: >-
-      spec-only. vi.useFakeTimers({ toFake: ['Date'] }); vi.setSystemTime(new Date(2026, 9, 6,
-      23, 30)) (local time; with TZ=America/New_York that is 2026-10-07T03:30Z, so a UTC-based
-      date would give the 7th). Render with createUsers(), click EXPORT_BUTTON. Assert
-      downloads()[0].fileName === 'users-2026-10-06.csv'.
+      vi.useFakeTimers({ toFake: ['Date'] }); vi.setSystemTime(new Date(2026, 9, 6, 23, 30))
+      (local time; with TZ=America/New_York that is 2026-10-07T03:30Z). Render with
+      createUsers(), click EXPORT_BUTTON. Assert downloads()[0].fileName ends with `.csv` and
+      matches /user/i; when it contains a date of the form \d{4}-?\d{2}-?\d{2}, that date is
+      2026-10-06 (a UTC-based date gives the 7th and fails).
   source: spec.md#file-name
 
 - id: users-csv.f04
   group: functional
-  check: >-
-    The file is UTF-8 with a byte order mark, declared as UTF-8, and non-ASCII names survive
-    byte for byte.
+  check: The file is UTF-8 and non-ASCII names survive byte for byte.
   verify:
     kind: test
     how: >-
-      Render with exportUsers(), click EXPORT_BUTTON. Assert bytes[0..2] are 0xEF 0xBB 0xBF; the
-      `mime` matches /charset=utf-8/i (blob type or data-URI parameter); parseCsv(text) yields a
-      NAME cell equal to 'Zażółć Gęślą' for id 11.
+      Render with exportUsers(), click EXPORT_BUTTON. Decode the bytes as UTF-8 (a leading byte
+      order mark is accepted and stripped); parseCsv(text) yields a NAME cell equal to
+      'Zażółć Gęślą' for id 11.
   source: spec.md#file-format
 
 - id: users-csv.f05
   group: functional
   check: >-
-    The file is well-formed RFC 4180 CSV: comma-delimited, a header record first, every record
-    with the header's field count, and records separated by CRLF.
+    The file is well-formed CSV: comma-delimited, a header record first, every record with the
+    header's field count, and one line terminator (LF or CRLF) used throughout.
   verify:
     kind: test
     how: >-
       Render with exportUsers(), click EXPORT_BUTTON. parseCsv(text) does not throw; records[0]
       has at least 8 fields and contains no value that looks like data (no cell equals an id or
-      an email of exportUsers()); every record has records[0].length fields; every entry of
-      `terminators` except possibly the last is '\r\n' (a missing or CRLF terminator after the
-      last record is accepted); the number of data records equals the number of users (7).
+      an email of exportUsers()); every record has records[0].length fields; the entries of
+      `terminators` are all '\n' or all '\r\n' (the last record may have none); the number
+      of data records equals the number of users (7).
   source: spec.md#file-format
 
 - id: users-csv.f06
@@ -116,17 +117,14 @@
 - id: users-csv.f07
   group: functional
   check: >-
-    The header row is exactly the specified 14 columns in the specified order, so role grant
-    history and other internal fields are not exported.
+    The file holds no internal data the list does not show: no role grant history or grant
+    sources.
   verify:
     kind: test
     how: >-
-      spec-only. Render with exportUsers(), click EXPORT_BUTTON, parseCsv. Assert records[0]
-      deep-equals ['ID', 'Display name', 'Login', 'Email', 'Provider', 'Roles', 'Status',
-      'Last login', 'Created', 'Updated', 'Preferred language', 'Blocked at', 'Blocked by',
-      'Block reason'] (the English defaults; the test renders without an I18nProvider) and no
-      cell of any record contains 'AUTHENTICATED_LOGIN' or 'ADMIN_MANAGED' (role grant sources
-      present in createRoleGrant data).
+      Render with exportUsers(), click EXPORT_BUTTON, parseCsv. No cell of any record contains
+      'AUTHENTICATED_LOGIN' or 'ADMIN_MANAGED' (role grant sources present in createRoleGrant
+      data).
   source: spec.md#columns, BDK-SEC-8
 
 - id: users-csv.f08
@@ -143,55 +141,56 @@
 
 - id: users-csv.f09
   group: functional
-  check: The export applies the current search, role filter and status filter.
+  check: >-
+    Which users are exported is consistent: either exactly the users matching the current
+    search, role and status filters, or always the whole list, never a mix.
   verify:
     kind: test
     how: >-
       Three renders with exportUsers(), each clicking EXPORT_BUTTON after the table shows:
-      (a) '/admin/users?role=ADMIN' -> ID cells exactly ['7']; (b) '/admin/users?status=BLOCKED'
-      -> exactly ['12']; (c) '/admin/users?q=doe' -> exactly ['9']. All three must hold.
+      (a) '/admin/users?role=ADMIN', (b) '/admin/users?status=BLOCKED', (c) '/admin/users?q=doe'.
+      Pass when the ID cells are exactly ['7'], ['12'] and ['9'] respectively, or when all
+      three exports hold the full set of 7 ids.
   source: spec.md#what-is-exported
 
 - id: users-csv.f10
   group: functional
-  check: The export rows follow the sort order currently applied to the table.
+  check: Every exported user appears exactly once.
   verify:
     kind: test
     how: >-
       renderAdminUsers('/admin/users?sort=email,DESC&size=50') with exportUsers(); after the
-      table renders, read the logins shown in the table in row order (the `.table-subtext` span
-      inside each row header of table 'Admin users'). Click EXPORT_BUTTON; the LOGIN column of
-      the data records, read in order, equals that list (comparing u10's login with its leading
-      tab and u13's with a possible leading "'" removed).
+      table renders, click EXPORT_BUTTON and parseCsv. The ID cells of the data records hold no
+      duplicate and number 7.
   source: spec.md#what-is-exported
 
 - id: users-csv.f11
   group: functional
   check: >-
-    Roles list every role of the user in one field, and status is the contract identifier
-    (`ACTIVE` / `BLOCKED`), empty when the API gives none.
+    Roles list every role of the user in one field, and the account status is stated, empty or
+    unknown when the API gives none.
   verify:
     kind: test
     how: >-
-      Render with exportUsers(), click EXPORT_BUTTON, parseCsv. ROLES cell of id 7 split on
-      /[^A-Z_]+/ (empty parts dropped) equals ['USER', 'ADMIN']; of id 8 equals ['USER'].
-      STATUS cell of id 7 === 'ACTIVE', of id 12 === 'BLOCKED', of id 11 === '' (spec-only for
-      the identifier form: localized 'Active' fails).
+      Render with exportUsers(), click EXPORT_BUTTON, parseCsv. ROLES cell of id 7 contains
+      'USER' and 'ADMIN' (case-insensitive, any separator); of id 8 contains 'USER' and not
+      'ADMIN'. STATUS cell of id 7 matches /active/i, of id 12 matches /blocked/i, and of id 11
+      matches neither.
   source: spec.md#value-formats
 
 - id: users-csv.f12
   group: functional
   check: >-
-    Timestamps are written as ISO 8601 instants equal to the API values, and missing values are
-    empty fields rather than UI placeholders.
+    Timestamps give the API instant, and missing values are not rendered as programming
+    artifacts.
   verify:
     kind: test
     how: >-
-      Render with exportUsers(), click EXPORT_BUTTON, parseCsv. LAST_LOGIN cell of id 7 matches
-      /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d+)?)?(Z|[+-]\d{2}:\d{2})$/ and
-      Date.parse(cell) === Date.parse('2026-06-06T22:10:00Z'); LAST_LOGIN cell of id 11 is ''.
-      No cell anywhere equals or contains (case-insensitive) 'undefined', 'null', 'Unknown',
-      'Unavailable', 'Login unavailable' or 'No roles'.
+      Render with exportUsers(), click EXPORT_BUTTON, parseCsv. LAST_LOGIN cell of id 7 is
+      non-empty and either Date.parse(cell) is within 60 s of Date.parse('2026-06-06T22:10:00Z')
+      or the cell contains the local date and time of that instant in New York (2026-06-06 or
+      6/6/2026, and 18:10 or 6:10 PM). No cell anywhere equals or contains (case-insensitive)
+      'undefined', 'null', 'NaN' or 'Invalid Date'.
   source: spec.md#value-formats
 
 - id: users-csv.f13
@@ -210,13 +209,15 @@
   group: functional
   check: >-
     Values that a spreadsheet would run as a formula (starting with `=`, `+`, `-`, `@`, tab or
-    CR) are neutralised with a leading single quote, keeping the original text after it.
+    CR) are neutralised, keeping the original text readable.
   verify:
     kind: test
     how: >-
-      Render with exportUsers(), click EXPORT_BUTTON, parseCsv. NAME of id 10 ===
-      `'=HYPERLINK("http://evil.test","x")`; LOGIN of id 10 === "'\tcmd"; PROVIDER of id 10 ===
-      "'+provider"; NAME of id 13 === "'@SUM(A1:A2)"; LOGIN of id 13 === "'-10".
+      Render with exportUsers(), click EXPORT_BUTTON, parseCsv. For NAME of id 10, LOGIN of id
+      10, PROVIDER of id 10, NAME of id 13 and LOGIN of id 13: the parsed cell does not start
+      with any of = + - @ \t \r, and it still contains the original value with its first
+      character (for example `=HYPERLINK("http://evil.test","x")` appears in the cell after a
+      prefix).
   source: spec.md#file-format, BDK-SEC-2, BDK-SEC-3
 
 - id: users-csv.f15
@@ -244,10 +245,9 @@
       null or disabled, and clicking it if present yields downloads().length === 0.
       (a) mockAdminUsersFetch({ pendingUsers: true }) -> unavailable while 'Loading users' shows;
       (b) users: problemResponse(403, 'Brak dostepu.') -> after the alert shows, unavailable;
-      (c) users: [] -> after 'No users returned' shows, the button is present and disabled
-      (spec: disabled, not hidden, once the list loaded);
+      (c) users: [] -> after 'No users returned' shows, unavailable;
       (d) '/admin/users?q=zzz-no-match' with exportUsers() -> after the no-match state shows,
-      present and disabled;
+      unavailable, or the export holds the full list (the f09 choice of exporting everything);
       (e) account: createAccount({ roles: ['USER'] }) -> after 'Admin role required', absent;
       (f) renderAdminUsers('/admin/users', createSession({ authenticated: false })) -> absent.
   source: spec.md#states, spec.md#who-can-export, BDK-SEC-5, BDK-SEC-7
@@ -268,26 +268,27 @@
 
 - id: users-csv.f18
   group: functional
-  check: The CSV header labels come from the localization registry.
+  check: The header labels are words a person reads, not code identifiers.
   verify:
     kind: test
     how: >-
-      spec-only. Same setup as users-csv.f17, then click EXPORT_BUTTON and parseCsv. Every
-      header cell is a single ⟦...⟧ segment (H-sweep isSingleTemplate is true for each), while
-      the data cells of id 7 contain no ⟦ (data is not translated).
-  source: spec.md#localization
+      Render with exportUsers(), click EXPORT_BUTTON, parseCsv. No header cell matches
+      /^[a-z]+[A-Z]\w*$/ (camelCase such as `displayName`, `accountStatus`, `lastLoginAt`) or
+      /^[a-z]+_[a-z_]+$/ (snake_case).
+  source: spec.md#columns
 
 - id: users-csv.f19
   group: functional
-  check: Exporting sends no request; the file is built from the list already loaded, including changes made in this session.
+  check: The export reflects changes made on the page in this session.
   verify:
     kind: test
     how: >-
-      spec-only. mockAdminUsersFetch({ users: exportUsers(), replaceStatusResponse:
+      mockAdminUsersFetch({ users: exportUsers(), replaceStatusResponse:
       createAdminUser({ ...u8, accountStatus: 'BLOCKED', blockedAt: '2026-06-11T10:00:00Z',
       blockedBy: 'admin-user', blockedReason: 'Spam activity' }) }); renderAdminUsers('/admin/users/8');
       in the form 'Replace account status for Reviewer User' type 'Spam activity' into
-      'Operator reason' and click 'Block user'; wait for 'Account status updated.'. Record
-      fetchMock.mock.calls.length, click EXPORT_BUTTON. Assert the call count is unchanged and
-      the STATUS cell of id 8 === 'BLOCKED'.
+      'Operator reason' and click 'Block user'; wait for 'Account status updated.'. Click
+      EXPORT_BUTTON (a refetch is allowed; a refetch returns the updated user). Assert the
+      STATUS cell of id 8 matches /blocked/i.
   source: spec.md#what-is-exported
+

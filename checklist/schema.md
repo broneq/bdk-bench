@@ -137,7 +137,7 @@ The hidden tests share these helpers (shipped in `bench/harness/`, copied next t
 - Each check scores 1 (pass) or 0 (fail). A check that cannot run (missing file, compile error, crashed command, judge error after retries) scores 0.
 - Per run the report gives passed/total for each group and in total: `functional 17/19, quality 11/13, process 11/13, total 39/45`.
 - The report row adds the run's wall time (workflow start to final reply) and its cost (sum of model usage at list prices) next to the total. Cost and time are reported, never folded into the score.
-- A workflow is run several times per task; the report gives the median and the range of each number.
+- A workflow runs once per task by default; where it runs several times, the report gives the median and the range of each number.
 
 ## Neutrality rules
 
@@ -149,5 +149,5 @@ The benchmark compares workflows, so no check may favour one of them.
 4. Ruleset-derived checks are reworded into concrete, framework-neutral statements about this codebase. Only bullets that apply to a TypeScript/React frontend change and can be decided from the diff are used; the rest are listed in `skipped-rules.md`.
 5. Where the fixture's own conventions (its `CONTRIBUTING.md`, `docs/`, ESLint config, i18n registry rules, test layout) conflict with a ruleset bullet, the fixture wins and the bullet is skipped.
 6. Hidden tests depend only on the base commit and the hidden spec, never on names the workflow chose.
-7. Some functional checks verify decisions the codebase does not settle. They are marked `spec-only` in their `how` text. A workflow can satisfy them by asking the user (the simulated user answers from `spec.md`) or by making the same choice; they exist so that careful clarification is visible in the score, and they are a minority of each task's checks.
+7. A functional check verifies only what every correct implementation must satisfy. Choices the codebase does not settle (file name, column set, header wording, value formats, whether filters apply) live in `spec.md` as the simulated user's answers, never as a pass condition: a workflow that asks gets the spec's answer, and any reasonable choice passes. Where a check covers such a choice, it accepts every reasonable option and fails only the wrong ones.
 8. Judge prompts are fixed in advance, phrased so that "yes" means pass, and never mention which workflow produced the change.

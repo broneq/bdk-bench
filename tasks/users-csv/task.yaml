@@ -4,6 +4,7 @@ prompt: I want to export the user list to CSV
 area:
   - src/admin/AdminUsersPage.tsx
   - src/api/adminUsers.ts
+# Hidden: the spec's answers in short. Choices here are what the simulated user answers, not pass conditions.
 summary: >-
   Add a CSV export to the admin user administration page. It downloads, in the browser and
   without any new request or endpoint, every user matching the current search, role and status
@@ -18,7 +19,7 @@ fixture:
   # The benchmark base commit is the upstream commit with the repository's agent instructions
   # (.agents/, AGENTS.md and similar) removed, so no workflow inherits the fixture's own AI
   # process. Its docs still mention .agents/references/*.md, which no longer exist.
-  base: upstream_commit minus agent instructions (marker file .bdk-eval-base)
+  base: upstream_commit minus agent instructions (marker file .bench-base)
   setup: npm ci
   node: 24.x
   npm: 11.x
@@ -89,7 +90,6 @@ applies:
     - process.p08
     - process.p09
     - process.p10
-    - process.p11
     - process.p12
     - process.p13
 

@@ -157,18 +157,19 @@
 - id: operator-i18n.f08
   group: functional
   check: >-
-    Table and detail cells show the localized display label for known audit enum values and the
-    raw identifier for values the frontend does not know.
+    Table and detail cells show no English display label for audit enum values: a known value
+    is shown localized or as its raw identifier, an unknown value as its raw identifier.
   verify:
     kind: test
     how: >-
-      spec-only. Polish pseudo-locale render of '/operator' with auditPage plus a third row
+      Polish pseudo-locale render of '/operator' with auditPage plus a third row
       { id: 5, action: 'ARCHIVE', targetType: 'SHELF', targetId: 4, actorLogin: 'robot',
       summary: 'Archived shelf.' } (cast through unknown). In the row of 'Created category
-      Java.', the Target cell's first text node and the Action cell text are single ⟦...⟧
-      templates (not 'CATEGORY' / 'CREATE'); in the row of 'Archived shelf.' the Target cell
-      text starts with 'SHELF' and the Action cell text is 'ARCHIVE'. After expanding entry 2,
-      the detail values next to the 'Target type' and 'Action' labels are single templates.
+      Java.', the Target cell's first text node and the Action cell text are each either a
+      single ⟦...⟧ template or exactly the raw identifier ('CATEGORY' / 'CREATE'); in the row of
+      'Archived shelf.' the Target cell text starts with 'SHELF' and the Action cell text is
+      'ARCHIVE'. After expanding entry 2, the values next to the 'Target type' and 'Action'
+      labels satisfy the same rule.
   source: spec.md (Decision on enum labels in cells), ROADMAP.md M-I18N-004 acceptance criteria 1 and 2
 
 - id: operator-i18n.f09
