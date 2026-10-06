@@ -61,7 +61,7 @@ function series(): { dir: string; setup: SeriesSetup } {
 }
 
 type Config = Record<string, unknown> & {
-  providers: { label: string; prompts: string[] }[];
+  providers: { id: string; label: string; config: { workflow: string }; prompts: string[] }[];
   prompts: { id: string; label: string; raw: string }[];
   tests: { description: string }[];
 };
@@ -87,6 +87,10 @@ describe("renderSeries", () => {
       },
     });
     expect(config.providers.map((provider) => provider.label)).toEqual(["plain", "other"]);
+    for (const provider of config.providers) {
+      expect(provider.id).toMatch(/\/harness\/provider\.ts$/);
+      expect(provider.config.workflow).toBe(provider.label);
+    }
     expect(config.extensions).toEqual([
       expect.stringMatching(/^file:\/\/.*\/harness\/hook\.ts:extensionHook$/),
     ]);

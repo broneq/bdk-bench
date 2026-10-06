@@ -38,12 +38,13 @@ parts:
       - "06"
     wave: 6
 ---
-| Part | Title | Depends on | Wave |
-| ---- | ----- | ---------- | ---- |
-| 01 | Root package, pinned promptfoo and tooling configuration | - | 1 |
-| 02 | Ledger, plan, row and shared leaf modules | 01 | 2 |
-| 03 | Fixture cache, locations, committed-tree check and pinned tool calls | 01 | 2 |
-| 04 | Run lifecycle - hook, provider, provider entries, assertion, transcript | 02, 03 | 3 |
-| 05 | Commands - cli, series runner, comparison, re-grade | 04 | 4 |
-| 06 | Smoke suite and the bench entry point | 05 | 5 |
-| 07 | CI, README, CLAUDE.md and the formatted tree | 06 | 6 |
+
+| Part | Title                                                                   | Depends on | Wave |
+| ---- | ----------------------------------------------------------------------- | ---------- | ---- |
+| 01   | Root package, pinned promptfoo and tooling configuration                | -          | 1    |
+| 02   | Ledger, plan, row and shared leaf modules                               | 01         | 2    |
+| 03   | Fixture cache, locations, committed-tree check and pinned tool calls    | 01         | 2    |
+| 04   | Run lifecycle - hook, provider, provider entries, assertion, transcript | 02, 03     | 3    |
+| 05   | Commands - cli, series runner, comparison, re-grade                     | 04         | 4    |
+| 06   | Smoke suite and the bench entry point                                   | 05         | 5    |
+| 07   | CI, README, CLAUDE.md and the formatted tree                            | 06         | 6    |

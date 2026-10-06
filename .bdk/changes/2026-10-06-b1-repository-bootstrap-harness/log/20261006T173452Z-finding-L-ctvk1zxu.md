@@ -11,7 +11,9 @@ ticket: A-iirvwmls
 refs:
   - .bdk/changes/2026-10-06-b1-repository-bootstrap-harness/architecture.md
   - BDK-ARCH-2
+level: nice-to-have
 ---
+
 architecture.md:59 lists what suites import: "runner, providers, fixture, tools, results, paths, budget, series, tree". At `825455dd`, every suite imports `RunOptions` and `SuiteRunner` from `cli.ts` (for example `suites/regression/suite.ts:12`), and every hooks module imports `SuiteHooks` and related types from `hook.ts` (`regression/hooks.ts:7-14`, `stages/hooks.ts:12-13`). Those are the two harness-owned interfaces that "The suite boundary" (:69) is about (BDK-ARCH-2), so the diagram leaves out the boundary it describes. A B3-style suite also imports `judge` and `stats` (`regression/hooks.ts:15`, `regression/report.ts:9`).
 
 Smaller issues:
@@ -20,3 +22,5 @@ Smaller issues:
 - :64 says promptfoo loads "two thin entry points" by `file://` path, the provider and the assertion. `hook.ts` `extensionHook` (afterEach) is a third.
 
 L-27j0iopb's three named slips are fixed. This one was raised in L-hy50mlmx and is still open.
+
+Triaged as nice-to-have at 2026-10-06T20:35:41.251Z

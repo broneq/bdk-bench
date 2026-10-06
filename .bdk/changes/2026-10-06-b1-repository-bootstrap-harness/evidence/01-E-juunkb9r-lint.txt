@@ -1,0 +1,9 @@
+exit 0
+Checking formatting...
+All matched files use Prettier code style!
+exit 0
+
+> bdk-bench@ typecheck /Users/broneq/projects/bdk-bench
+> tsc --noEmit
+
+exit 0

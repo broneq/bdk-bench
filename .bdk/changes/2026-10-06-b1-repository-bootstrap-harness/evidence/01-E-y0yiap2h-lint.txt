@@ -1,0 +1,28 @@
+
+/Users/broneq/projects/bdk-bench/.gitignore
+  0:0  warning  File ignored because no matching configuration was supplied
+
+/Users/broneq/projects/bdk-bench/.prettierignore
+  0:0  warning  File ignored because no matching configuration was supplied
+
+/Users/broneq/projects/bdk-bench/.prettierrc.json
+  0:0  warning  File ignored because no matching configuration was supplied
+
+/Users/broneq/projects/bdk-bench/patches/promptfoo@0.123.1.patch
+  0:0  warning  File ignored because no matching configuration was supplied
+
+/Users/broneq/projects/bdk-bench/pnpm-workspace.yaml
+  0:0  warning  File ignored because no matching configuration was supplied
+
+/Users/broneq/projects/bdk-bench/versions.json
+  0:0  warning  File ignored because no matching configuration was supplied
+
+/Users/broneq/projects/bdk-bench/vitest.config.ts
+  0:0  warning  File ignored because no matching configuration was supplied
+
+✖ 7 problems (0 errors, 7 warnings)
+
+Checking formatting...
+[error] No parser could be inferred for file "/Users/broneq/projects/bdk-bench/.prettierignore".
+Error occurred when checking code style in the above file.
+exit 1

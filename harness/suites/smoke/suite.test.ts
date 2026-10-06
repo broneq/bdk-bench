@@ -69,7 +69,7 @@ describe("describeSmoke", () => {
     const setup = describeSmoke(spec(tempDir()));
     expect(Object.keys(setup.workflows)).toEqual(["plain"]);
     const plain = setup.workflows.plain;
-    expect(plain?.provider.config.plugins).toEqual([]);
+    expect(plain?.provider.config.sdk.plugins).toEqual([]);
     expect(plain?.plan.expectedPlugins).toBe(0);
     expect(plain?.plan.provenance.adapter).toEqual({ name: "plain", version: "0.3.284" });
   });

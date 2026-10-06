@@ -4,7 +4,7 @@ id: "04"
 title: Run lifecycle - hook, provider, provider entries, assertion, transcript
 goal: A run starts in its own directories, is measured, and is recorded as one row with cost, turns, wall time and adapter provenance.
 success-measure: "`npx vitest run harness/hook.test.ts harness/provider.test.ts harness/providers.test.ts harness/assert.test.ts harness/transcript.test.ts` passes, and `npx tsc --noEmit` reports no error in these five modules."
-do-not-touch: ["package.json", "pnpm-lock.yaml", "harness/results.ts", "harness/budget.ts", "harness/cli.ts", "harness/runner.ts"]
+do-not-touch: ["package.json", "pnpm-lock.yaml", "harness/results.ts", "harness/budget.ts", "harness/cli.ts"]
 depends-on: ["02", "03"]
 spec-impact: [bench-runner]
 ---

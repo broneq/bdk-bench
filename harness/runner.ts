@@ -75,7 +75,7 @@ function kept<T>(
 }
 
 function modelsOf(workflows: readonly [string, WorkflowSetup][]): string {
-  const models = workflows.map(([, workflow]) => workflow.provider.config.model);
+  const models = workflows.map(([, workflow]) => workflow.provider.config.sdk.model);
   return [...new Set(models.filter((model): model is string => typeof model === "string"))].join(
     ",",
   );

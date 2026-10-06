@@ -7,37 +7,33 @@ const base = { label: "plain", model: "m", plugin: null, maxBudgetUsd: 1 };
 describe("sessionProvider", () => {
   it("gives a workflow without a plugin an empty plugin list and its label", () => {
     const entry = sessionProvider(base);
-    expect(entry.id).toBe("anthropic:claude-agent-sdk");
-    expect(entry.config).toMatchObject({
-      workflow: "plain",
-      plugins: [],
-      model: "m",
-      max_budget_usd: 1,
-    });
+    expect(entry.id).toMatch(/\/harness\/provider\.ts$/);
+    expect(entry.config.workflow).toBe("plain");
+    expect(entry.config.sdk).toMatchObject({ plugins: [], model: "m", max_budget_usd: 1 });
   });
 
   it("loads a plugin directory as the only local plugin", () => {
     const entry = sessionProvider({ ...base, plugin: "/p" });
-    expect(entry.config).toHaveProperty("plugins", [{ type: "local", path: "/p" }]);
+    expect(entry.config.sdk).toHaveProperty("plugins", [{ type: "local", path: "/p" }]);
   });
 
   it("leaves the per-run fields to the provider", () => {
-    const config = sessionProvider(base).config;
+    const config = sessionProvider(base).config.sdk;
     expect(config).not.toHaveProperty("working_dir");
     expect(config).not.toHaveProperty("debug_file");
   });
 
   it("sets max_turns and ask_user_question only when given", () => {
-    const bare = sessionProvider(base).config;
+    const bare = sessionProvider(base).config.sdk;
     expect(bare).not.toHaveProperty("max_turns");
     expect(bare).not.toHaveProperty("ask_user_question");
-    const set = sessionProvider({ ...base, maxTurns: 5, askUserQuestion: true }).config;
+    const set = sessionProvider({ ...base, maxTurns: 5, askUserQuestion: true }).config.sdk;
     expect(set).toHaveProperty("max_turns", 5);
     expect(set).toHaveProperty("ask_user_question", { behavior: "first_option" });
   });
 
   it("isolates settings, connectors, git config and permissions", () => {
-    expect(sessionProvider(base).config).toMatchObject({
+    expect(sessionProvider(base).config.sdk).toMatchObject({
       apiKeyRequired: false,
       setting_sources: ["project"],
       permission_mode: "bypassPermissions",

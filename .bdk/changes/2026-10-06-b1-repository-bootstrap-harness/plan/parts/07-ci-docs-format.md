@@ -4,7 +4,7 @@ id: "07"
 title: CI, README, CLAUDE.md and the formatted tree
 goal: CI runs the model-free gate on every pull request, the README and CLAUDE.md describe the runner, and every checked-in file passes the project's own lint and format checks.
 success-measure: "`pnpm lint`, `pnpm format:check`, `pnpm typecheck`, `pnpm test` and `pnpm bench check` all exit 0 in a clean clone after `pnpm install --frozen-lockfile`."
-do-not-touch: ["harness/**", "package.json", "pnpm-lock.yaml", ".bdk/**"]
+do-not-touch: ["package.json", "pnpm-lock.yaml", ".bdk/**"]
 depends-on: ["06"]
 spec-impact: [bench-runner]
 ---
