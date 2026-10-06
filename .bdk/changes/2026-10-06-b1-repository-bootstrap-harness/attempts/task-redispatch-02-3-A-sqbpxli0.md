@@ -8,6 +8,8 @@ of: 3
 scope: full
 opened-at: 2026-10-06T17:54:31.401Z
 author: Przemysław Broniszewski <przemek@broniszewski.net>
+closed-at: 2026-10-06T17:56:51.298Z
+outcome: ok
 package: .bdk/changes/2026-10-06-b1-repository-bootstrap-harness/dispatch/02-3-runner-A-sqbpxli0.md
 rules-read: 2026-10-06T17:54:38.699Z
 ---
