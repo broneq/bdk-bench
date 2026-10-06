@@ -1,0 +1,6 @@
+=== eslint harness/paths.test.ts harness/paths.ts ===
+
+=== prettier --check harness/paths.test.ts harness/paths.ts ===
+Checking formatting...
+All matched files use Prettier code style!
+exit 0
