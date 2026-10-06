@@ -64,7 +64,7 @@ scope:
     - bundle-budget.config.json
 
 applies:
-  functional: all          # users-csv.f01 .. users-csv.f19
+  functional: all          # users-csv.f01 .. users-csv.f20
   quality:
     - quality.q01
     - quality.q02
@@ -101,10 +101,11 @@ applies:
     - process.p10
     - process.p12
     - process.p13
+    - process.p14
 
 check_counts:
-  functional: 19
+  functional: 20
   quality: 11
   tests: 12
-  process: 10
-  total: 52
+  process: 11
+  total: 54

@@ -62,7 +62,7 @@ A hidden behavioural test. The runner copies the benchmark's hidden test files i
 TZ=America/New_York npx vitest run src/__bench__/<file> --reporter=json --outputFile=<out>
 ```
 
-Each check maps to one `it()` whose title starts with the check id. The check passes if and only if that test passes. A hidden test that fails to compile or import counts as failed.
+Each check maps to one `it()` whose title starts with the check id. A check that needs a real browser (a download, for example) is a `command` check that runs a hidden Playwright script from `bench/e2e/` against the fixture's Vite mock mode, the way the fixture's own smoke scripts do. The check passes if and only if that test passes. A hidden test that fails to compile or import counts as failed.
 
 Hidden tests depend only on what exists at the base commit and on what the hidden spec fixes:
 

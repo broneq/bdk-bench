@@ -140,3 +140,16 @@
       clearly that nothing is left? Answer no if the evidence shows a gap (for example a failing
       command, a requirement visibly not implemented) that the reply does not mention."
   source: 'fixture CONTRIBUTING.md (Validation: "Report skipped checks with the reason in handoff"), docs/WORKING_WITH_AI.md, BDK-TQ-11'
+
+- id: process.p14
+  group: process
+  check: The fixture's accessibility gate passes.
+  verify:
+    kind: command
+    how: >-
+      Once per grader environment `npx playwright install chromium`; then `npm run a11y` from
+      the working tree; pass on exit status 0. The script starts Vite in mock mode itself and
+      runs axe-core in light and dark mode on the catalog/home, account and admin users routes,
+      so it scans the users page the export changes; for operator-i18n it guards against
+      regressions only. The fixture's CI runs the same command.
+  source: fixture .github/workflows/ci.yml (Accessibility step), scripts/a11y.mjs, BDK-REACT-7

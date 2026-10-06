@@ -1,5 +1,6 @@
 # Functional checks for users-csv. Harness helpers (H-admin, H-download, H-csv, H-i18n) are
-# defined in checklist/schema.md. All tests live in src/__bench__/users-csv.test.tsx and run with
+# defined in checklist/schema.md. All tests except f20 (a Playwright script) live in
+# src/__bench__/users-csv.test.tsx and run with
 # TZ=America/New_York. Each test calls installDownloadCapture() before acting.
 #
 # EXPORT_BUTTON = screen.getByRole('button', { name: /export|csv/i })
@@ -291,6 +292,26 @@
       EXPORT_BUTTON (a refetch is allowed; a refetch returns the updated user). Assert the
       STATUS cell of id 8 matches /blocked/i.
   source: spec.md#what-is-exported
+
+- id: users-csv.f20
+  group: functional
+  check: In a real browser, an administrator downloads the CSV file from the users page.
+  verify:
+    kind: command
+    how: >-
+      `node bench/e2e/users-csv-download.mjs`; pass on exit status 0. The hidden script, copied
+      into the working tree after the session, uses the fixture's own `scripts/with-vite.mjs`
+      (`withViteServer`, mode `mock`) and Playwright Chromium, signs in as the mock admin the
+      way `scripts/smoke-authenticated-mock.mjs` does (the anonymous session's login provider,
+      then the admin session), opens `/admin/users`, waits for the heading 'User
+      administration', then `page.waitForEvent('download')` while clicking
+      getByRole('button', { name: /export|csv/i }). It asserts: the download's
+      suggestedFilename ends with `.csv`; the saved file decodes as UTF-8 and parses with
+      H-csv; it has a header record and one data record per user that `GET /api/admin/users`
+      (fetched from the page with the same session) returns for the default list view; and a
+      record holds the mock admin's login `admin-user`. It catches what jsdom only simulates: a
+      download the browser never starts, a wrong MIME type, a revoked URL before the download.
+  source: spec.md#download-mechanics, fixture scripts/smoke-authenticated-mock.mjs
 
 - id: users-csv.t01
   group: tests
