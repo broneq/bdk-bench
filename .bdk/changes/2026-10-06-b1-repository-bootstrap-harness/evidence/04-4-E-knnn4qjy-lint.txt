@@ -1,0 +1,8 @@
+=== ESLint ===
+No issues found.
+exit 0
+
+=== Prettier ===
+Checking formatting...
+All matched files use Prettier code style!
+exit 0
