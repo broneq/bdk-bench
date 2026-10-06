@@ -1,0 +1,3 @@
+The target CLAUDE.md is a documentation file, not an executable file.
+This check cannot run.
+exit 0
