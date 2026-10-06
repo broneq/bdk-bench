@@ -1,0 +1,10 @@
+
+ RUN  v5.0.2 /Users/broneq/projects/bdk-bench
+
+
+ Test Files  2 passed (2)
+      Tests  32 passed (32)
+   Start at  20:12:35
+   Duration  105ms (tests 54%, import 25%, transform 13%, worker 7%)
+
+exit 0

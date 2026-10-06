@@ -1,6 +1,6 @@
 // A measured series: the rendered promptfoo config plus a plan file the
-// extension hook reads. Tests are expanded per run and workflow, runs
-// outermost, so workflows interleave and a drift over time hits every workflow.
+// extension hook reads. One test per run and item, runs outermost, so a drift
+// over time hits every item; every workflow runs each test as a provider.
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 
@@ -26,6 +26,8 @@ export interface WorkflowPlan {
 export interface SeriesPlan {
   readonly suite: string;
   readonly series: string;
+  readonly ledgerFile: string;
+  readonly budgetUsd: number;
   /** Counted when a run reports no cost, the most it could have spent. */
   readonly runCapUsd: number;
   readonly resultsFile: string;
@@ -76,7 +78,6 @@ export interface EvalItem {
 export interface TestCase {
   readonly description: string;
   readonly vars: Readonly<Record<string, string>>;
-  readonly providers: readonly string[];
   readonly assert?: readonly unknown[];
   readonly options: { readonly disableVarExpansion: true };
 }
@@ -109,34 +110,24 @@ export function varValue(value: string): string {
     : value;
 }
 
-function literalVars(vars: Readonly<Record<string, string>> = {}): Record<string, string> {
+function literalVars(vars: Readonly<Record<string, string>>): Record<string, string> {
   return Object.fromEntries(Object.entries(vars).map(([key, value]) => [key, literalVar(value)]));
 }
 
-export function expandTests(
-  workflows: readonly string[],
-  items: readonly EvalItem[],
-  runs: number,
-  /** Vars of one workflow, over the item's: a workflow's own prompt, for example. */
-  workflowVars: Readonly<Record<string, Readonly<Record<string, string>>>> = {},
-): TestCase[] {
+export function expandTests(items: readonly EvalItem[], runs: number): TestCase[] {
   const tests: TestCase[] = [];
   for (let run = 1; run <= runs; run++) {
     for (const item of items) {
-      for (const workflow of workflows) {
-        tests.push({
-          description: `${workflow} ${item.id} run ${run}`,
-          vars: {
-            ...literalVars(item.vars),
-            ...literalVars(workflowVars[workflow]),
-            [RUN_VARS.item]: item.id,
-            [RUN_VARS.run]: String(run),
-          },
-          providers: [workflow],
-          ...(item.assert === undefined ? {} : { assert: item.assert }),
-          options: { disableVarExpansion: true },
-        });
-      }
+      tests.push({
+        description: `${item.id} run ${String(run)}`,
+        vars: {
+          ...literalVars(item.vars),
+          [RUN_VARS.item]: item.id,
+          [RUN_VARS.run]: String(run),
+        },
+        ...(item.assert === undefined ? {} : { assert: item.assert }),
+        options: { disableVarExpansion: true },
+      });
     }
   }
   return tests;

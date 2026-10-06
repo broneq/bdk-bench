@@ -4,12 +4,12 @@ id: "04"
 title: Run lifecycle - hook, provider, provider entries, assertion, transcript
 goal: A run starts in its own directories, is measured, and is recorded as one row with cost, turns, wall time and adapter provenance.
 success-measure: "`npx vitest run harness/hook.test.ts harness/provider.test.ts harness/providers.test.ts harness/assert.test.ts harness/transcript.test.ts` passes, and `npx tsc --noEmit` reports no error in these five modules."
-do-not-touch: ["package.json", "pnpm-lock.yaml", "harness/series.ts", "harness/results.ts", "harness/budget.ts", "harness/cli.ts", "harness/runner.ts"]
+do-not-touch: ["package.json", "pnpm-lock.yaml", "harness/results.ts", "harness/budget.ts", "harness/cli.ts", "harness/runner.ts"]
 depends-on: ["02", "03"]
 spec-impact: [bench-runner]
 ---
 
-Source: `git -C /Users/broneq/projects/bdk show 825455dd:evals/harness/<name>.ts` and `<name>.test.ts`. Use the names `harness/series.ts`, `harness/results.ts` and `harness/budget.ts` export as written by the earlier parts. Copy rules for every task here: remove references to BDK design documents from comments (`design D-n`, `T40`, `T43`, `openspec/`); rename `cell` to `workflow` in identifiers, strings, test titles and comments (`cellName` to `workflowName`, `RunContext.cell` to `RunContext.workflow`, `CellPlan` to `WorkflowPlan`); metadata key `bdkCell` to `benchWorkflow`; `bdkCommit` to `benchCommit`; the ledger and row field `cell` to `workflow`.
+Source: `git -C /Users/broneq/projects/bdk show 825455dd:evals/harness/<name>.ts` and `<name>.test.ts`. Use the names the earlier parts export. Copy rules for every task here: drop BDK design references from comments (`design D-n`, `T40`, `T43`, `openspec/`); rename `cell` to `workflow` everywhere (`cellName` to `workflowName`, `RunContext.cell` to `RunContext.workflow`, `CellPlan` to `WorkflowPlan`); metadata key `bdkCell` to `benchWorkflow`; `bdkCommit` to `benchCommit`; the ledger and row field `cell` to `workflow`.
 
 ## 04-1 Run lifecycle and the row
 
@@ -19,12 +19,15 @@ Copy `hook.ts` and `hook.test.ts`. Changes:
 - `Measurement` and `Measured` lose `templateHashes`; the row loses `variantHash` and `templateHashes`.
 - The row's `provenance` is `{ models, fixtureCommit, benchCommit, adapter }`, the last three read from `context.workflow.provenance`.
 - The harness records two metrics itself: `turns` = `metadata.numTurns` and `wall_s` = `metadata.wallMs / 1000`, each only when the session reported it (never 0 for a missing value). They are merged after the suite's metrics, so the harness values win. A discarded row's `metrics` holds only these two; a counted row's holds the suite's, the item assertions' and these two.
+- `SeriesPlan` (`harness/series.ts`) gains `readonly ledgerFile: string` and `readonly budgetUsd: number`, as in the source; update `harness/series.test.ts` fixtures. `expandTests(items, runs)` and `TestCase` return to the form at `825455dd` (one test per item and run, no `providers`, no `workflowVars`), and tests; fixtures say `sandboxDir`, not `sandbox`.
 - Everything else (budget stop before the run's directories are touched, run cap charged and run discarded without reported cost, no row and no charge for a budget stop, `judge.json` record, `measurement.json`) is unchanged.
 
 **Files:**
 
 - Create: `harness/hook.ts`
 - Create: `harness/hook.test.ts`
+- Modify: `harness/series.ts`
+- Modify: `harness/series.test.ts`
 
 **Test cases:**
 
@@ -32,10 +35,10 @@ Copy `hook.ts` and `hook.test.ts`. Changes:
 - an isolation-discarded run with the same metadata appends a row with `discarded` set and `metrics` equal to `{ turns: 7, wall_s: 12.5 }`
 - a session result without `numTurns` gives a row without the key `turns`
 - the row has `workflow` equal to the run's workflow name, no `cell` key, and `provenance.adapter` equal to the workflow plan's adapter
-- a suite metric named `turns` with value 99 is replaced by the harness value 7
-- a ledger at the budget makes `startRun` throw `BudgetReached` and leaves the run's directories untouched
+- a suite metric `turns` of 99 is replaced by the harness value 7
+- a ledger at the budget makes `startRun` throw `BudgetReached`; the run's directories stay untouched
 - a provider error discards the run with `provider error:` and the message; a result without a reported cost is charged the run cap and discarded
-- `extensionHook("beforeAll", ctx)` returns `ctx` unchanged without reading a plan
+- `extensionHook("beforeAll", ctx)` returns `ctx` unchanged
 
 **Stop rule:** stop and return `blocked` if `RunContext` needs a field that `series.ts` does not provide.
 

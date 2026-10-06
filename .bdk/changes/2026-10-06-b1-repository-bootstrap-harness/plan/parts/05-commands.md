@@ -45,7 +45,7 @@ The copied test builds its providers with `sessionProvider` (from `providers.ts`
 
 **Test cases:**
 
-- 2 workflows, 2 items, 3 runs render 12 tests, `maxConcurrency` equal to the setup's concurrency, the extension hook and the harness assertion in `defaultTest`
+- 2 workflows, 2 items, 3 runs render 6 tests and 2 providers, `maxConcurrency` equal to the setup's concurrency, the extension hook and the harness assertion in `defaultTest`
 - the description of series `s1` of suite `smoke` at commit `abcdef0123…` with model `m` is `smoke s1 bench@abcdef0 m`
 - two workflows with the same prompt share one prompt entry, and a workflow with its own prompt gets its own entry labelled by that workflow
 - `only: { workflows: ["plain"] }` keeps one provider; an unknown workflow throws `UsageError` containing `unknown workflow nope; known workflows: plain`

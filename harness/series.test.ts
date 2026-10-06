@@ -24,6 +24,8 @@ function planIn(dir: string): SeriesPlan {
   return {
     suite: "smoke",
     series: "probe-x",
+    ledgerFile: join(dir, "budget.json"),
+    budgetUsd: 100,
     runCapUsd: 15,
     resultsFile: join(dir, "rows.jsonl"),
     rawDir: join(dir, "raw"),
@@ -34,58 +36,37 @@ function planIn(dir: string): SeriesPlan {
 }
 
 describe("expandTests", () => {
-  it("runs outermost, then items, and each test holds its item and run", () => {
+  it("emits one test per run and item, runs outermost, each holding its item and run", () => {
     const tests = expandTests(
-      ["w"],
       [
         { id: "a", vars: { q: "x" } },
         { id: "b", vars: { q: "y" } },
       ],
       3,
     );
-    expect(tests).toHaveLength(6);
     expect(tests.map((test) => test.description)).toEqual([
-      "w a run 1",
-      "w b run 1",
-      "w a run 2",
-      "w b run 2",
-      "w a run 3",
-      "w b run 3",
+      "a run 1",
+      "b run 1",
+      "a run 2",
+      "b run 2",
+      "a run 3",
+      "b run 3",
     ]);
     expect(tests[1]).toEqual({
-      description: "w b run 1",
+      description: "b run 1",
       vars: { q: "y", bench_item: "b", bench_run: "1" },
-      providers: ["w"],
       options: { disableVarExpansion: true },
     });
   });
 
-  it("interleaves workflows within each run and pins every test to its workflow", () => {
-    const tests = expandTests(["a", "b"], [{ id: "q1", vars: {} }], 2);
-    expect(tests.map((test) => [test.description, test.providers])).toEqual([
-      ["a q1 run 1", ["a"]],
-      ["b q1 run 1", ["b"]],
-      ["a q1 run 2", ["a"]],
-      ["b q1 run 2", ["b"]],
-    ]);
-  });
-
-  it("adds a workflow's own vars over the item's", () => {
-    const tests = expandTests(["a", "b"], [{ id: "t", vars: { p: "item" } }], 1, {
-      b: { p: "own" },
-    });
-    expect(tests.map((test) => test.vars.p)).toEqual(["item", "own"]);
-  });
-
   it("wraps a var with template syntax in a raw block and varValue returns the original", () => {
-    const [test] = expandTests(["a"], [{ id: "p", vars: { x: "{{ x }}" } }], 1);
+    const [test] = expandTests([{ id: "p", vars: { x: "{{ x }}" } }], 1);
     expect(test?.vars.x).toBe("{% raw %}{{ x }}{% endraw %}");
     expect(varValue(test?.vars.x ?? "")).toBe("{{ x }}");
   });
 
   it("keeps an item's assertions", () => {
     const [test] = expandTests(
-      ["a"],
       [{ id: "t", vars: {}, assert: [{ type: "contains", value: "x" }] }],
       1,
     );
