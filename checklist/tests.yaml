@@ -101,21 +101,25 @@
       solution's own tests clear it with a margin. When Stryker fails because a test in T fails
       on the unmutated code, the check fails; when it fails before any mutant ran for a reason
       outside the change (grader crash, timeout of the dry run on a clean tree), it is a grader
-      error and the run is re-graded, not scored.
+      error and the run is re-graded, not scored. The run's details list every survived and no-coverage
+      mutant (file, line, mutator, original and replacement code), so a missing test variant is
+      visible, not only the percentage.
   source: BDK-TQ-1 (tests name the behaviour that would break), fixture ROADMAP.md Product Direction ("Add tests at the smallest useful layer for each user-visible behavior")
 
 - id: tests.t06
   group: tests
   check: >-
-    The new tests execute at least 80% of the executable lines the change added or changed in
-    source files.
+    The new tests execute at least 80% of the executable lines and at least 70% of the branches
+    the change added or changed in source files.
   verify:
     kind: command
     how: >-
       Fail if T or S is empty. `npx vitest run $T --coverage --coverage.provider=v8
       --coverage.reporter=json --coverage.include=<each file of S> --coverage.reportsDirectory=<out>`,
       then `node bench/scripts/diff-coverage.mjs $BASE <out>/coverage-final.json`: the script
-      takes L, keeps the lines that hold the start of a statement in the coverage map, and
-      reports covered / total. Pass when the ratio is at least 0.80 (a change whose L holds no
-      executable line passes). Only T runs, so lines covered only by the base tests do not count.
+      takes L and reports (a) covered / total of the statements that start on a line of L and
+      (b) covered / total of the branch arms (`branchMap` / `b`) whose location starts on a line
+      of L, so `if (a || b)` on one line counts each arm. Pass when (a) is at least 0.80 and (b)
+      is at least 0.70; a ratio with no item in L counts as met. Only T runs, so code covered
+      only by the base tests does not count.
   source: BDK-CQ-7, fixture vite.config.ts (coverage provider v8)

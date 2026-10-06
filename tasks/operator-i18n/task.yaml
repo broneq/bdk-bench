@@ -93,6 +93,7 @@ applies:
     - operator-i18n.t03
     - operator-i18n.t04
     - operator-i18n.t05
+    - operator-i18n.t06
   process:
     - process.p01
     - process.p02
@@ -109,6 +110,6 @@ applies:
 check_counts:
   functional: 18
   quality: 11
-  tests: 11
+  tests: 12
   process: 9
-  total: 49
+  total: 50

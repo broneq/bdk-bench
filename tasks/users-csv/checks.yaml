@@ -306,13 +306,13 @@
 
 - id: users-csv.t02
   group: tests
-  check: The workflow's tests cover the spreadsheet formula guard.
+  check: The workflow's tests cover the formula guard for each trigger character.
   verify:
     kind: judge
     how: >-
-      Evidence: added-tests and the code they exercise. Question: "Does at least one test added
-      or changed in this diff export or serialize a value starting with one of = + - @ and
-      assert how it is neutralised in the output?"
+      Evidence: added-tests and the code they exercise. Question: "Taken together, do the tests
+      added or changed in this diff export or serialize a value starting with each of = + - and
+      @ (four cases, in one test or several) and assert how each is neutralised in the output?"
   source: spec.md#file-format, BDK-SEC-2
 
 - id: users-csv.t03
@@ -328,14 +328,15 @@
 
 - id: users-csv.t04
   group: tests
-  check: The workflow's tests cover when the export is unavailable.
+  check: The workflow's tests cover every state in which the export is unavailable.
   verify:
     kind: judge
     how: >-
-      Evidence: added-tests and the code they exercise. Question: "Does at least one test added
-      or changed in this diff assert that the export control is disabled or absent in at least
-      one of these states: the list is loading, the list failed to load, the list is empty, no
-      user matches the filters?"
+      Evidence: added-tests and the code they exercise. Question: "Taken together, do the tests
+      added or changed in this diff assert that the export control is disabled or absent in
+      each of these four states: the list is loading, the list failed to load, the list is
+      empty, and no user matches the current search or filters (or, when the export always
+      holds the whole list, that the control is unavailable when the list is empty)?"
   source: spec.md#states
 
 - id: users-csv.t05
@@ -349,3 +350,14 @@
       by role or label and clicking it), and assert on the produced file's content rather than
       only that a function was called?"
   source: fixture ROADMAP.md Product Direction ("Add tests at the smallest useful layer for each user-visible behavior"), BDK-TQ-3
+
+- id: users-csv.t06
+  group: tests
+  check: The workflow's tests cover who may not export.
+  verify:
+    kind: judge
+    how: >-
+      Evidence: added-tests and the code they exercise. Question: "Does at least one test added
+      or changed in this diff render the users page for a signed-in user without the admin role
+      or for a signed-out visitor and assert that no export control is offered?"
+  source: spec.md#who-can-export, BDK-SEC-5

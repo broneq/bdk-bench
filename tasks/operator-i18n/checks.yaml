@@ -377,3 +377,15 @@
       passing) still assert the English text of the operator pages' labels or state messages,
       so a wrong English default would be caught?"
   source: ROADMAP.md M-I18N-004 ("unchanged English defaults")
+
+- id: operator-i18n.t06
+  group: tests
+  check: The workflow's tests cover the singular and plural form of each count message the change keys.
+  verify:
+    kind: judge
+    how: >-
+      Evidence: added-tests and the code they exercise. Question: "For the count messages this
+      change routes through the registry (for example the number of audit entries), do the tests
+      added or changed in this diff assert the rendered text for a count of 1 and for a count
+      greater than 1? Answer yes also when the change keys no count message."
+  source: spec.md (counts with one/many keys)

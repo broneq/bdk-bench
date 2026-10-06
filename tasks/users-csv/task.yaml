@@ -89,6 +89,7 @@ applies:
     - users-csv.t03
     - users-csv.t04
     - users-csv.t05
+    - users-csv.t06
   process:
     - process.p01
     - process.p02
@@ -104,6 +105,6 @@ applies:
 check_counts:
   functional: 19
   quality: 11
-  tests: 11
+  tests: 12
   process: 10
-  total: 51
+  total: 52
