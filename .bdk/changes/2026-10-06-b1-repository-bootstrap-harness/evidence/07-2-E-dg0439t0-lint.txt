@@ -1,0 +1,2 @@
+The target has no executable file
+exit 0
