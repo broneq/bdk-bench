@@ -39,11 +39,18 @@ describe("cacheHome", () => {
     expect(cacheHome({ HOME: "/h" })).toBe("/h/.cache");
     expect(cacheHome({})).toBe(join(homedir(), ".cache"));
   });
+
+  it("ignores an empty or relative XDG_CACHE_HOME and HOME", () => {
+    expect(cacheHome({ XDG_CACHE_HOME: "", HOME: "/h" })).toBe("/h/.cache");
+    expect(cacheHome({ XDG_CACHE_HOME: "rel", HOME: "/h" })).toBe("/h/.cache");
+    expect(cacheHome({ XDG_CACHE_HOME: "", HOME: "" })).toBe(join(homedir(), ".cache"));
+    expect(cacheHome({ HOME: "rel" })).toBe(join(homedir(), ".cache"));
+  });
 });
 
 describe("resultsFile", () => {
   it("names one jsonl file per series under the results directory", () => {
-    expect(resultsFile("smoke", "s1", "/x")).toBe("/x/results/smoke/s1.jsonl");
+    expect(resultsFile("/x/results", "smoke", "s1")).toBe("/x/results/smoke/s1.jsonl");
   });
 });
 

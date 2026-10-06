@@ -3,6 +3,7 @@
 import { existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 
+import { resultsFile } from "./paths.ts";
 import { readRows } from "./results.ts";
 import type { ResultRow } from "./results.ts";
 import { formatValues, formatVerdict } from "./stats.ts";
@@ -86,7 +87,7 @@ export function runCompare(
   const dir = join(resultsDir, suite);
   const read = (name: string): NamedSeries => ({
     name,
-    rows: readRows(join(dir, `${name}.jsonl`)),
+    rows: readRows(resultsFile(resultsDir, suite, name)),
   });
   const series = [read(baseline), read(candidate)] as const;
   const missing = series.find((named) => named.rows.length === 0);

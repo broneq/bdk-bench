@@ -56,7 +56,7 @@ Each run appends one row to `results/<suite>/<series>.jsonl`. Every series is al
 
 ## Isolation
 
-Every run has its own working copy, config home and debug log in a sandbox outside the repository, `${XDG_CACHE_HOME:-~/.cache}/bdk-bench/<checkout>/<suite>/<series>/`, so a session walking up from its working copy cannot find the repository's own files; a sandbox inside the repository is refused. A run is discarded, and listed with its reason, when its debug log is missing, shows a directory-loaded plugin count other than the workflow expects, shows claude.ai connectors that were not disabled, or when the session called an MCP tool.
+Every run has its own working copy, config home and debug log in a sandbox outside the repository, `${XDG_CACHE_HOME:-~/.cache}/bdk-bench/<checkout>/<suite>/<series>/`, so a session walking up from its working copy cannot find the repository's own files; a sandbox inside the repository is refused. A run is discarded, and listed with its reason, when its debug log is missing, shows a directory-loaded plugin count other than the workflow expects, shows claude.ai connectors that were not disabled, when the session called an MCP tool, when no cost was reported (the run cap is charged), or on a harness error.
 
 ## Provider facts
 

@@ -7,7 +7,7 @@ import type { AuthStatus, SuiteName, SuiteRunner } from "./cli.ts";
 import { runCompare } from "./compare.ts";
 import { loadSuiteHooks } from "./hook.ts";
 import { judge } from "./judge.ts";
-import { LEDGER_FILE, ROOT_DIR, RUNS_DIR, resultsFile } from "./paths.ts";
+import { LEDGER_FILE, ROOT_DIR, RESULTS_DIR, RUNS_DIR, resultsFile } from "./paths.ts";
 import { regradeSeries } from "./regrade.ts";
 import { smokeRunner } from "./suites/smoke/suite.ts";
 import { view } from "./tools.ts";
@@ -41,9 +41,7 @@ process.exitCode = await run(process.argv.slice(2), {
   suites,
   view: () => view(ROOT_DIR),
   compare: (suite, baseline, candidate) =>
-    Promise.resolve(
-      runCompare(join(ROOT_DIR, "results"), suite, baseline, candidate, { print, printError }),
-    ),
+    Promise.resolve(runCompare(RESULTS_DIR, suite, baseline, candidate, { print, printError })),
   regrade: (suite, series) =>
     regradeSeries(
       suite,
@@ -51,7 +49,7 @@ process.exitCode = await run(process.argv.slice(2), {
       {
         hooks: loadSuiteHooks,
         judge,
-        resultsFile: resultsFile(suite, series),
+        resultsFile: resultsFile(RESULTS_DIR, suite, series),
         rawDir: join(RUNS_DIR, "series", suite, series, "raw"),
         ledgerFile: LEDGER_FILE,
       },

@@ -10,12 +10,16 @@ import { fileURLToPath } from "node:url";
 import type { FixturePin } from "./fixture.ts";
 
 export const ROOT_DIR = dirname(dirname(fileURLToPath(import.meta.url)));
+export const RESULTS_DIR = join(ROOT_DIR, "results");
 export const RUNS_DIR = join(ROOT_DIR, ".runs");
 export const LEDGER_FILE = join(RUNS_DIR, "budget.json");
 
-/** The user cache directory: XDG_CACHE_HOME, else `$HOME/.cache`, else the home directory's `.cache`. */
+/** The user cache directory: XDG_CACHE_HOME, else `$HOME/.cache`, else the home directory's `.cache`; an empty or relative value is ignored. */
 export function cacheHome(env: Readonly<Record<string, string | undefined>>): string {
-  return env.XDG_CACHE_HOME ?? join(env.HOME ?? homedir(), ".cache");
+  const xdg = env.XDG_CACHE_HOME;
+  if (xdg !== undefined && isAbsolute(xdg)) return xdg;
+  const home = env.HOME;
+  return join(home !== undefined && isAbsolute(home) ? home : homedir(), ".cache");
 }
 
 /**
@@ -55,6 +59,6 @@ export function readVersions(file = join(ROOT_DIR, "versions.json")): Versions {
   return JSON.parse(readFileSync(file, "utf8")) as Versions;
 }
 
-export function resultsFile(suite: string, series: string, root = ROOT_DIR): string {
-  return join(root, "results", suite, `${series}.jsonl`);
+export function resultsFile(resultsDir: string, suite: string, series: string): string {
+  return join(resultsDir, suite, `${series}.jsonl`);
 }

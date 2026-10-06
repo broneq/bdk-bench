@@ -11,7 +11,9 @@ ticket: A-eq1itdbh
 group: p07
 refs:
   - README.md
-level: should-fix
+review: true
+level: blocker
+disposition: fix
 ---
 
 Problem: README.md Isolation (line 59) lists four discard reasons. harness/hook.ts also discards a run on "no reported cost" (ledger charges the run cap) and on "harness error: ...".
@@ -21,3 +23,5 @@ Why it matters: a reader seeing a discarded run with those reasons will not find
 Suggested fix: add the two causes to the sentence, or say "for example".
 
 Triaged as should-fix at 2026-10-06T21:31:06.955Z
+
+Decided fix at 2026-10-06T21:33:03.244Z

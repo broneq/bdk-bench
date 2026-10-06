@@ -10,10 +10,12 @@ import type { RunOptions, SuiteRunner } from "../../cli.ts";
 import { npmCi, prepareFixture } from "../../fixture.ts";
 import {
   LEDGER_FILE,
+  RESULTS_DIR,
   ROOT_DIR,
   RUNS_DIR,
   SANDBOX_DIR,
   readVersions,
+  resultsFile,
   sandboxOf,
 } from "../../paths.ts";
 import { sessionProvider } from "../../providers.ts";
@@ -132,7 +134,7 @@ const REAL_DEPS: SmokeDeps = {
     runsDir: RUNS_DIR,
     sandboxDir: SANDBOX_DIR,
     ledgerFile: LEDGER_FILE,
-    resultsDir: join(ROOT_DIR, "results"),
+    resultsDir: RESULTS_DIR,
   },
 };
 
@@ -153,10 +155,10 @@ export function smokeRunner(
       }
       const versions = readVersions(join(dirs.rootDir, "versions.json"));
       const adapterVersion = sdkVersion(readFileSync(join(dirs.rootDir, "package.json"), "utf8"));
-      const resultsFile = (name: string): string => join(dirs.resultsDir, SUITE, `${name}.jsonl`);
+      const resultsOf = (name: string): string => resultsFile(dirs.resultsDir, SUITE, name);
       const series = freshSeriesName(
         `${options.probe ? "probe" : "series"}-${seriesStamp()}`,
-        (name) => readRows(resultsFile(name)).length > 0,
+        (name) => readRows(resultsOf(name)).length > 0,
       );
       const dir = join(dirs.runsDir, "series", SUITE, series);
       const sandbox = sandboxOf(SUITE, series, dirs.sandboxDir, dirs.rootDir);
@@ -173,7 +175,7 @@ export function smokeRunner(
         budgetUsd: options.budget,
         runCapUsd: options.runCap,
         ledgerFile: dirs.ledgerFile,
-        resultsFile: resultsFile(series),
+        resultsFile: resultsOf(series),
         concurrency: options.concurrency,
         fixtureBase,
         fixtureCommit: versions.fixture.commit,
