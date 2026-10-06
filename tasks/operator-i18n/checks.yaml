@@ -318,3 +318,62 @@
       diff) state that translations or seed rows for the new message keys must be provided on
       the backend side, as a follow-up outside this change, and is the command output empty?"
   source: ROADMAP.md M-I18N-004 acceptance criterion 4
+
+- id: operator-i18n.t01
+  group: tests
+  check: The workflow's tests render the operator audit page with a non-English language and assert localized chrome.
+  verify:
+    kind: judge
+    how: >-
+      Evidence: added-tests and the code they exercise. Question: "Does at least one test added
+      or changed in this diff render /operator (or OperatorPage) with a non-English language or
+      a translated message catalog active and assert that labels, headers or state texts show
+      the translated text instead of the English default?"
+  source: ROADMAP.md M-I18N-004 acceptance criteria
+
+- id: operator-i18n.t02
+  group: tests
+  check: The workflow's tests do the same for the diagnostics page.
+  verify:
+    kind: judge
+    how: >-
+      Evidence: added-tests and the code they exercise. Question: "Does at least one test added
+      or changed in this diff render /operator/diagnostics (or OperatorDiagnosticsPage) with a
+      non-English language or a translated catalog active and assert translated card titles,
+      metadata labels or Yes/No values?"
+  source: ROADMAP.md M-I18N-004 (T-I18N-012)
+
+- id: operator-i18n.t03
+  group: tests
+  check: The workflow's tests cover a composed message with a placeholder.
+  verify:
+    kind: judge
+    how: >-
+      Evidence: added-tests and the code they exercise. Question: "Does at least one test added
+      or changed in this diff assert the rendered text of a message that inserts a value into a
+      template (for example 'Details for {label}' or 'ID {id}'), with the value substituted, in
+      English or in a translation?"
+  source: spec.md (composed strings)
+
+- id: operator-i18n.t04
+  group: tests
+  check: The workflow's tests cover the fallback for an audit value the frontend does not know.
+  verify:
+    kind: judge
+    how: >-
+      Evidence: added-tests and the code they exercise. Question: "Does at least one test added
+      or changed in this diff render or format an audit action or target type that is not one
+      of the known values and assert what is shown for it?"
+  source: spec.md (Decision on enum labels in cells)
+
+- id: operator-i18n.t05
+  group: tests
+  check: The workflow's tests keep the English defaults pinned.
+  verify:
+    kind: judge
+    how: >-
+      Evidence: added-tests, the base commit's operator tests and the code they exercise.
+      Question: "With no translation active, do the tests (added, changed or existing and
+      passing) still assert the English text of the operator pages' labels or state messages,
+      so a wrong English default would be caught?"
+  source: ROADMAP.md M-I18N-004 ("unchanged English defaults")

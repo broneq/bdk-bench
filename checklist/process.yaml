@@ -34,38 +34,6 @@
       no-hard-wrapped-prose rules, which apply to edited docs and CHANGELOG.md) and `eslint .`.
   source: fixture package.json scripts, .markdownlint-cli2.mjs, docs/specs/SPEC_admin_user_management.md (validation list)
 
-- id: process.p04
-  group: process
-  check: >-
-    The change adds or changes tests for its new behaviour, and those tests would catch its
-    absence: at least one added or changed test fails when the base commit's non-test source is
-    restored.
-  verify:
-    kind: command
-    how: >-
-      `T=$(git diff --name-only --diff-filter=AM $BASE -- 'src/**/*.test.ts' 'src/**/*.test.tsx')`;
-      fail if `T` is empty. Then in a scratch copy: `git checkout $BASE -- src` (restores every
-      base file under src), delete files under `src/` that do not exist at `$BASE` except the
-      files in `T`, copy the final versions of the files in `T` back in, and run
-      `npx vitest run $T --reporter=json`. Pass when the run reports at least one failed test or
-      a failed test file (an import of a module the change added counts as a failure). Tests
-      that only assert behaviour the base already had (for example English text that did not
-      change) pass on the base source and so do not satisfy this check.
-  source: BDK-CQ-7, BDK-TQ-1, fixture ROADMAP.md Product Direction ("Add tests at the smallest useful layer for each user-visible behavior")
-
-- id: process.p05
-  group: process
-  check: The base commit's own tests still pass, unmodified, against the final source.
-  verify:
-    kind: command
-    how: >-
-      In a scratch copy: `B=$(git ls-tree -r --name-only $BASE -- src | grep -E '\.test\.tsx?$')`,
-      `git checkout $BASE -- $B`, then `npx vitest run $B`; pass on exit status 0. This catches
-      deleted, skipped or weakened existing tests and regressions in behaviour the existing tests
-      pin (for example the English text of every keyed string, the admin users list, filters and
-      pagination).
-  source: fixture CONTRIBUTING.md (contract-first; update the owning test alongside behaviour), docs/DEVELOPMENT_LIFECYCLE.md (Review And Close Out)
-
 - id: process.p06
   group: process
   check: >-

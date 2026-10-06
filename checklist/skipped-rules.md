@@ -12,7 +12,7 @@ The `quality` and `process` groups reword bullets of the BDK ruleset into neutra
 | CQ-2, CQ-3                     | `quality.q05`                                                                               |
 | CQ-4, CQ-5                     | `quality.q04`                                                                               |
 | CQ-6                           | `quality.q07`                                                                               |
-| CQ-7                           | `quality.q12`, `process.p04`                                                                |
+| CQ-7                           | `tests.t03`, `tests.t01`, `tests.t06`                                                                |
 | CQ-9                           | `process.p06`                                                                               |
 | JS-1, JS-4                     | `quality.q02`                                                                               |
 | REACT-7                        | `users-csv.f01` (native button)                                                             |
@@ -22,8 +22,8 @@ The `quality` and `process` groups reword bullets of the BDK ruleset into neutra
 | SEC-5, SEC-7                   | `users-csv.f16` (admin-only, unavailable on failed access checks)                           |
 | SEC-8                          | `users-csv.f07` (no role grant history in the file)                                         |
 | SEC-9                          | `process.p06` (no dependency changes)                                                       |
-| TQ-1                           | `quality.q13`, `process.p04`                                                                |
-| TQ-2 to TQ-10                  | `quality.q13` (TQ-7 to TQ-10 as allowances)                                                 |
+| TQ-1                           | `tests.t04`, `tests.t01`, `tests.t05`                                                              |
+| TQ-2 to TQ-10                  | `tests.t04` (TQ-7 to TQ-10 as allowances)                                                 |
 | TQ-11                          | `process.p13`                                                                               |
 | TS-2, TS-7                     | `quality.q02`                                                                               |
 | TS-5, TS-6                     | `quality.q03`                                                                               |

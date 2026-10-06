@@ -292,3 +292,60 @@
       STATUS cell of id 8 matches /blocked/i.
   source: spec.md#what-is-exported
 
+- id: users-csv.t01
+  group: tests
+  check: The workflow's tests cover CSV escaping of a comma, a double quote and a line break.
+  verify:
+    kind: judge
+    how: >-
+      Evidence: added-tests and the code they exercise. Question: "Does at least one test added
+      or changed in this diff export or serialize a value containing a comma, one containing a
+      double quote and one containing a line break, and assert the exact output text or the
+      parsed value for each?"
+  source: spec.md#file-format, BDK-SEC-3
+
+- id: users-csv.t02
+  group: tests
+  check: The workflow's tests cover the spreadsheet formula guard.
+  verify:
+    kind: judge
+    how: >-
+      Evidence: added-tests and the code they exercise. Question: "Does at least one test added
+      or changed in this diff export or serialize a value starting with one of = + - @ and
+      assert how it is neutralised in the output?"
+  source: spec.md#file-format, BDK-SEC-2
+
+- id: users-csv.t03
+  group: tests
+  check: The workflow's tests pin which users are exported (filters, all pages).
+  verify:
+    kind: judge
+    how: >-
+      Evidence: added-tests and the code they exercise. Question: "Does at least one test added
+      or changed in this diff render the page with more users than one page shows, or with an
+      active search or filter, trigger the export and assert which users the file contains?"
+  source: spec.md#what-is-exported
+
+- id: users-csv.t04
+  group: tests
+  check: The workflow's tests cover when the export is unavailable.
+  verify:
+    kind: judge
+    how: >-
+      Evidence: added-tests and the code they exercise. Question: "Does at least one test added
+      or changed in this diff assert that the export control is disabled or absent in at least
+      one of these states: the list is loading, the list failed to load, the list is empty, no
+      user matches the filters?"
+  source: spec.md#states
+
+- id: users-csv.t05
+  group: tests
+  check: The workflow's tests drive the export through the page as a user does.
+  verify:
+    kind: judge
+    how: >-
+      Evidence: added-tests. Question: "Does at least one test added or changed in this diff
+      render the admin users page, activate the export control the way a user would (finding it
+      by role or label and clicking it), and assert on the produced file's content rather than
+      only that a function was called?"
+  source: fixture ROADMAP.md Product Direction ("Add tests at the smallest useful layer for each user-visible behavior"), BDK-TQ-3

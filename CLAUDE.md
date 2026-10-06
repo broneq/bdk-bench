@@ -5,7 +5,7 @@ Benchmark of AI coding workflows (plain Claude Code, BDK, OpenSpec, ...). Each w
 ## Layout
 
 ```
-checklist/     - schema.md (check format, groups, scoring, neutrality rules), quality.yaml and process.yaml (shared checks), skipped-rules.md
+checklist/     - schema.md (check format, groups, scoring, neutrality rules), quality.yaml, tests.yaml and process.yaml (shared checks), skipped-rules.md
 tasks/<id>/    - task.yaml (id, prompt, area, shared checks that apply), spec.md (hidden product spec), checks.yaml (functional checks), hidden/ (hidden tests), reference/ (a solution that passes every check)
 harness/       - runner: per-run working copies, workflow sessions, grader, ledger, promptfoo configs (B1, B3)
 adapters/      - one per workflow: version, install, prompt template, end of run (B7)
@@ -26,7 +26,7 @@ The benchmark compares workflows, one of which (BDK) is maintained by the same a
 
 ## Checklist
 
-`checklist/schema.md` is the format. Every check is binary and names how it is verified: `test` (a hidden behavioural test that finds controls by role and accessible name, never by names the agent chooses), `command` (a shell command and its pass condition) or `judge` (an exact yes/no question and the evidence it reads). Use `judge` only where a test or a command cannot decide. Scores are reported per group (`functional`, `quality`, `process`) and in total, never only as a total.
+`checklist/schema.md` is the format. Every check is binary and names how it is verified: `test` (a hidden behavioural test that finds controls by role and accessible name, never by names the agent chooses), `command` (a shell command and its pass condition) or `judge` (an exact yes/no question and the evidence it reads). Use `judge` only where a test or a command cannot decide. Scores are reported per group (`functional`, `quality`, `tests`, `process`) and in total, never only as a total.
 
 A task is ready to run when its reference solution passes every check and the bare fixture fails every functional check.
 

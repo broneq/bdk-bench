@@ -180,39 +180,3 @@
       when an added line appends a query parameter (`?`, `URLSearchParams.set/append`) to
       `ADMIN_USERS_PATH`, which the contract defines without parameters. Pass on exit status 0.
   source: fixture CONTRIBUTING.md and README.md (Backend Contract), docs/specs/SPEC_admin_user_management.md (Backend Contract)
-
-- id: quality.q12
-  group: quality
-  check: >-
-    Each new behaviour is tested at the smallest layer that can observe it: pure logic the
-    change adds is tested directly, and the page wiring is covered by at least one rendered-page
-    test.
-  verify:
-    kind: judge
-    how: >-
-      Evidence: diff and added-tests. Question: "For the behaviour this change adds, is there a
-      direct test of each non-trivial pure function or module it introduces (for example a
-      serializer or a label mapping), and at least one test that renders the affected page and
-      exercises the new behaviour through the UI? Answer yes also when the change adds no pure
-      logic and the page-level tests cover the behaviour."
-  source: fixture ROADMAP.md Product Direction ("Add tests at the smallest useful layer"), docs/WORKING_WITH_AI.md, BDK-CQ-7
-
-- id: quality.q13
-  group: quality
-  check: >-
-    Every added or changed test asserts an observable result of the code under test, and none
-    is a constant mirror, a type mirror, an existence/introspection check, an interaction-only
-    assertion or a shape-only assertion.
-  verify:
-    kind: judge
-    how: >-
-      Evidence: added-tests, plus the code they exercise. Question: "Does every test case added
-      or changed in this diff assert a concrete observable result (rendered text or attributes,
-      produced file or string content, URL, request sent, returned value) such that a plausible
-      wrong implementation would fail it, with none of these: asserting a constant or registry
-      entry equals its own literal definition; asserting a value's type that the signature
-      already declares; asserting only that a symbol exists, is a function or a module loads;
-      asserting only that a mock or spy was called without checking what was produced; asserting
-      only lengths, keys or presence without checking any value? Checks on generated text,
-      rendered output, file content and contract strings are allowed."
-  source: BDK-TQ-1, BDK-TQ-2, BDK-TQ-3, BDK-TQ-4, BDK-TQ-5, BDK-TQ-6 (allowances BDK-TQ-7, BDK-TQ-8, BDK-TQ-9, BDK-TQ-10)

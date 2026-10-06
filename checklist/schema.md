@@ -11,18 +11,19 @@ This document defines the check format, the groups, the verification kinds, the 
 | `checklist/schema.md`          | This document.                                                                |
 | `checklist/quality.yaml`       | Shared code-quality checks (group `quality`).                                 |
 | `checklist/process.yaml`       | Shared outcome-hygiene checks (group `process`).                              |
+| `checklist/tests.yaml`         | Shared test-quality checks (group `tests`), including mutation testing.       |
 | `checklist/skipped-rules.md`   | Source ruleset bullets that were not turned into checks, with the reason.     |
 | `tasks/<id>/task.yaml`         | Task id, prompt, fixture pin, scope allow-list, and the shared checks that apply. |
 | `tasks/<id>/spec.md`           | The hidden product spec. Only the simulated user reads it; the workflow never does. |
-| `tasks/<id>/checks.yaml`       | The task's functional checks (group `functional`).                            |
+| `tasks/<id>/checks.yaml`       | The task's functional checks and its own `tests` checks for the spec's risky cases. |
 
 ## Check format
 
 Every check file is a YAML list of entries:
 
 ```yaml
-- id: users-csv.f01          # <task id or group>.<letter><nn>; f = functional, q = quality, p = process
-  group: functional           # functional | quality | process
+- id: users-csv.f01          # <task id or group>.<letter><nn>; f = functional, q = quality, t = tests, p = process
+  group: functional           # functional | quality | tests | process
   check: One sentence stating the observable condition that passes.
   verify:
     kind: test                # test | command | judge
@@ -46,7 +47,8 @@ Rules for a check:
 | ------------ | ------------------------------------------------------------------------------------------- | ------------------------- |
 | `functional` | The requirements of one task's hidden spec.                                                  | `tasks/<id>/checks.yaml`  |
 | `quality`    | Code quality of the change, shared by all tasks: neutral rewordings of ruleset bullets that fit a TypeScript/React diff, plus conventions the fixture itself demands. | `checklist/quality.yaml`  |
-| `process`    | Outcome hygiene any workflow should meet: green suite, typecheck, lint and build; tests for new behaviour; scope; no debug leftovers; fixture documentation conventions; an honest final reply. | `checklist/process.yaml`  |
+| `tests`      | The quality of the tests the workflow wrote: they exist and fail without the feature, existing tests stay intact, the right layer, real assertions, mutation score and line coverage of the new code (`checklist/tests.yaml`), plus per-task checks that the spec's risky cases are tested (`tasks/<id>/checks.yaml`). In agentic coding the tests are what lets the next change trust the code, so they are scored apart from the code itself. | `checklist/tests.yaml`, `tasks/<id>/checks.yaml` |
+| `process`    | Outcome hygiene any workflow should meet: green suite, typecheck, lint and build; scope; no debug leftovers; fixture documentation conventions; an honest final reply. | `checklist/process.yaml`  |
 
 `task.yaml` lists which shared checks apply to the task under `applies`. A shared check that does not apply to a task is left out of that task's total; it is never scored as a free pass.
 
@@ -134,8 +136,8 @@ The hidden tests share these helpers (shipped in `bench/harness/`, copied next t
 
 ## Scoring
 
-- Each check scores 1 (pass) or 0 (fail). A check that cannot run (missing file, compile error, crashed command, judge error after retries) scores 0.
-- Per run the report gives passed/total for each group and in total: `functional 17/19, quality 11/13, process 11/13, total 39/45`.
+- Each check scores 1 (pass) or 0 (fail). A check that cannot run because of the change (missing file, compile error, a command failing on the workflow's code) scores 0. A failure of the grader itself (a crashed tool before it reached the workflow's code, a judge error after retries) is not a score: the run is re-graded.
+- Per run the report gives passed/total for each group and in total: `functional 17/19, quality 10/11, tests 8/11, process 9/10, total 44/51`.
 - The report row adds the run's wall time (workflow start to final reply) and its cost (sum of model usage at list prices) next to the total. Cost and time are reported, never folded into the score.
 - A workflow runs once per task by default; where it runs several times, the report gives the median and the range of each number.
 

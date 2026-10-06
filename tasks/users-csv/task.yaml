@@ -77,14 +77,22 @@ applies:
     - quality.q09
     - quality.q10
     - quality.q11
-    - quality.q12
-    - quality.q13
+  tests:
+    - tests.t01
+    - tests.t02
+    - tests.t03
+    - tests.t04
+    - tests.t05
+    - tests.t06
+    - users-csv.t01
+    - users-csv.t02
+    - users-csv.t03
+    - users-csv.t04
+    - users-csv.t05
   process:
     - process.p01
     - process.p02
     - process.p03
-    - process.p04
-    - process.p05
     - process.p06
     - process.p07
     - process.p08
@@ -95,6 +103,7 @@ applies:
 
 check_counts:
   functional: 19
-  quality: 13
-  process: 13
-  total: 45
+  quality: 11
+  tests: 11
+  process: 10
+  total: 51
