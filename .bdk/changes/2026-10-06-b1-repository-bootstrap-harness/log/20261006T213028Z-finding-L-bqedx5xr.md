@@ -3,7 +3,7 @@ schema: 1
 id: L-bqedx5xr
 type: finding
 summary: "cacheHome treats an empty XDG_CACHE_HOME or HOME as set: sandbox and promptfoo DB become cwd-relative"
-status: proposed
+status: resolved
 source: agent:integration-reviewer
 author: Przemysław Broniszewski <przemek@broniszewski.net>
 at: 2026-10-06T21:30:28.866Z
@@ -27,3 +27,5 @@ Suggested fix: In `cacheHome`, ignore a value that is empty or not absolute (`is
 Triaged as should-fix at 2026-10-06T21:31:06.862Z
 
 Decided fix at 2026-10-06T21:33:02.868Z
+
+Resolved as resolved at 2026-10-06T21:38:23.108Z: fixed in 1c946e8
