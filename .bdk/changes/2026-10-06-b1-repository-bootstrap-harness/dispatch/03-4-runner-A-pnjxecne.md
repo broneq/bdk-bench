@@ -1,47 +1,44 @@
 ---
 schema: 1
-ticket: A-jx930irb
-target: 03-1
+ticket: A-pnjxecne
+target: 03-4
 role: runner
 adapter: runner
 attempt: 1
 of: 3
 scope: full
-at: 2026-10-06T18:02:09.730Z
+at: 2026-10-06T18:02:10.063Z
 kernel-version: 2.7.0
 template-hash: sha256:2b93453803b2b63419da370a087d886028a09d26941c3cf6a9a5d00f57a9703b
-report: .bdk/changes/2026-10-06-b1-repository-bootstrap-harness/reports/03-1-runner-A-jx930irb.md
+report: .bdk/changes/2026-10-06-b1-repository-bootstrap-harness/reports/03-4-runner-A-pnjxecne.md
 rules: []
 ---
-# BDK dispatch package A-jx930irb
+# BDK dispatch package A-pnjxecne
 
-You are the `runner` of ticket A-jx930irb: attempt 1 of 3, scope `full`. Work from this package; read other state only through `bdk`.
+You are the `runner` of ticket A-pnjxecne: attempt 1 of 3, scope `full`. Work from this package; read other state only through `bdk`.
 
 ## Change
 
 B1 Repository bootstrap: harness extracted from BDK evals (https://github.com/broneq/bdk-bench/issues/1)
 
-## Target 03-1
+## Target 03-4
 
 From `.bdk/changes/2026-10-06-b1-repository-bootstrap-harness/plan/parts/03-fixture-paths-tools.md`:
 
-### 03-1 Fixture preparation and copy
+### 03-4 Pinned promptfoo calls
 
-Copy `fixture.ts` and `fixture.test.ts`. Changes: marker file `.bench-base` (was `.bdk-eval-base`); `BASE_FORMAT` becomes 3 so older caches rebuild; git identity `Bench` and `bench@bench.invalid` in `prepareFixture` and `emptyBase`; remove the comment about the BDK repository's licence and the one about the v2 executor and keep the branch `main` beside `feat/eval`. `STRIPPED` stays `.claude`, `.agents`, `CLAUDE.md`, `AGENTS.md`. Exports and signatures unchanged: `FixturePin`, `FixtureMismatch`, `prepareFixture(pin, cacheDir, options)`, `emptyBase`, `freshCopy`, `npmCi`.
+Copy `tools.ts` and `tools.test.ts`. Remove `needsInstall` and `ensureTools` (the root package installs with `pnpm install`). `promptfooEnv(env)` returns `PROMPTFOO_DISABLE_TELEMETRY=1`, `PROMPTFOO_DISABLE_UPDATE=1` and `PROMPTFOO_CONFIG_DIR=<cache>/bdk-bench/promptfoo` where `<cache>` is `XDG_CACHE_HOME`, else `$HOME/.cache`. `validateConfig(rootDir, config)`, `evaluate(rootDir, config, output, env)` and `view(rootDir)` call `<rootDir>/node_modules/.bin/promptfoo` with the arguments of the source and `cwd` `rootDir` for `evaluate`.
 
 **Files:**
 
-- Create: `harness/fixture.ts`
-- Create: `harness/fixture.test.ts`
+- Create: `harness/tools.ts`
+- Create: `harness/tools.test.ts`
 
 **Test cases:**
 
-- `prepareFixture` of a local upstream with `.claude/`, `.agents/`, `CLAUDE.md`, `AGENTS.md` and `src/` returns a base on branch `feat/eval` that lacks the first four and keeps `src/`, with `main` at the same commit and the identity `bench@bench.invalid`
-- the base holds `.bench-base` listing the commit, and `git status` of the base does not show it (it is excluded)
-- a second call for the same commit returns the same directory and does not call `install` again
-- a pin whose commit differs from the fetched HEAD throws `FixtureMismatch` and the message contains both commits
-- `freshCopy` removes commits and files an earlier run left in the target
-- `npmCi` runs with no `npm_config_*` variable in its environment
+- `promptfooEnv({ XDG_CACHE_HOME: "/c" }).PROMPTFOO_CONFIG_DIR` is `/c/bdk-bench/promptfoo`
+- `promptfooEnv({ HOME: "/h" }).PROMPTFOO_CONFIG_DIR` is `/h/.cache/bdk-bench/promptfoo` and is not under `~/.promptfoo`
+- the env sets telemetry and update checks off
 
 `do-not-touch`: `package.json`, `pnpm-lock.yaml`, `harness/hook.ts`, `harness/provider.ts`, `harness/cli.ts`.
 
@@ -49,7 +46,7 @@ Copy `fixture.ts` and `fixture.test.ts`. Changes: marker file `.bench-base` (was
 
 No accepted decision or open blocker names this target.
 
-No other entry names this target; `bdk log list --for 03-1` shows later ones.
+No other entry names this target; `bdk log list --for 03-4` shows later ones.
 
 ## Role: runner
 
@@ -104,7 +101,7 @@ Then return only the envelope, at most 15 lines, and the report path as the pack
 
 ## Rules
 
-Run `bdk rules show --ticket A-jx930irb` before you start and follow the rules it prints.
+Run `bdk rules show --ticket A-pnjxecne` before you start and follow the rules it prints.
 
 ## Checks
 
@@ -112,17 +109,17 @@ Run the checks in this order. Save each check's output to a file under `.bdk/.ma
 
 ### tests-scoped
 
-- `npx vitest related --run harness/fixture.test.ts harness/fixture.ts`
+- `npx vitest related --run harness/tools.test.ts harness/tools.ts`
 
-Record: `bdk evidence record tests-scoped <file> --ticket A-jx930irb --verdict pass|fail|not-run --cite <citation>`
+Record: `bdk evidence record tests-scoped <file> --ticket A-pnjxecne --verdict pass|fail|not-run --cite <citation>`
 
 ### lint
 
-- `npx eslint harness/fixture.test.ts harness/fixture.ts`
-- `npx prettier --check harness/fixture.test.ts harness/fixture.ts`
+- `npx eslint harness/tools.test.ts harness/tools.ts`
+- `npx prettier --check harness/tools.test.ts harness/tools.ts`
 
-Record: `bdk evidence record lint <file> --ticket A-jx930irb --verdict pass|fail|not-run --cite <citation>`
+Record: `bdk evidence record lint <file> --ticket A-pnjxecne --verdict pass|fail|not-run --cite <citation>`
 
 ## Return
 
-Write your entries with `bdk log add <type> <summary> --ref <ref> --ticket A-jx930irb`: the summary is 1 to 120 characters (put detail in `--body`), the type is one of decision, finding, observation, blocker, question, assumption, risk, learning, report. Then pipe the full report to `bdk log ingest --ticket A-jx930irb` on stdin (`bdk log ingest --ticket A-jx930irb < <report-file>`; there is no frontmatter flag), the envelope (`status`, `files`, `entries`, `evidence`) as its frontmatter between two `---` lines. `entries` lists the ids `log add` printed. Leave `reason` out, except for `blocked` or `needs-context`. When it refuses, fix the named field and call it again. Return only the envelope and the report path `.bdk/changes/2026-10-06-b1-repository-bootstrap-harness/reports/03-1-runner-A-jx930irb.md`.
+Write your entries with `bdk log add <type> <summary> --ref <ref> --ticket A-pnjxecne`: the summary is 1 to 120 characters (put detail in `--body`), the type is one of decision, finding, observation, blocker, question, assumption, risk, learning, report. Then pipe the full report to `bdk log ingest --ticket A-pnjxecne` on stdin (`bdk log ingest --ticket A-pnjxecne < <report-file>`; there is no frontmatter flag), the envelope (`status`, `files`, `entries`, `evidence`) as its frontmatter between two `---` lines. `entries` lists the ids `log add` printed. Leave `reason` out, except for `blocked` or `needs-context`. When it refuses, fix the named field and call it again. Return only the envelope and the report path `.bdk/changes/2026-10-06-b1-repository-bootstrap-harness/reports/03-4-runner-A-pnjxecne.md`.
