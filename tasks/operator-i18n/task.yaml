@@ -1,0 +1,105 @@
+id: operator-i18n
+title: Localize the operator pages (roadmap M-I18N-004)
+prompt: >-
+  The operator pages still show English text when another language is active. It's in the
+  roadmap - please fix it.
+area:
+  - src/operator/OperatorPage.tsx
+  - src/operator/OperatorDiagnosticsPage.tsx
+  - src/operator/AuditEntryDetails.tsx
+  - src/operator/auditFormat.ts
+  - src/i18n/messages.ts
+roadmap:
+  milestone: M-I18N-004
+  tasks: [T-I18N-011, T-I18N-012, T-I18N-013]
+summary: >-
+  Implement ROADMAP.md milestone M-I18N-004: route every user-visible string on /operator and
+  /operator/diagnostics (labels, options, headings, captions, aria-labels, summaries, state
+  blocks, metadata labels, Yes/No, unavailable texts) through the localization registry with
+  unchanged English defaults, using single templates with placeholders for composed strings and
+  one/many keys for counts; keep audit enum identifiers in option values, URLs and requests
+  while table and detail cells show localized labels; remove the three registry keys without
+  call sites; leave backend seed alignment to the backend and say so; add a changelog entry.
+
+fixture:
+  repository: https://github.com/kamkie/technical-interview-frontend
+  upstream_commit: 946a2081f84381ffc3b4a494467479a5b6886ead
+  # Same base as users-csv: the upstream commit with the agent instructions removed.
+  base: upstream_commit minus agent instructions (marker file .bdk-eval-base)
+  setup: npm ci
+  node: 24.x
+  npm: 11.x
+
+hidden_spec: spec.md
+functional_checks: checks.yaml
+hidden_tests: src/__bench__/operator-i18n.test.tsx
+
+scope:
+  # Existing files the change may modify (process.p06).
+  allowed:
+    - src/operator/**
+    - src/i18n/**
+    - src/ui/**
+    - src/mock-api/handler.ts
+    - src/mock-api/handler.test.ts
+    - CHANGELOG.md
+    - ROADMAP.md
+    - docs/ROADMAP_ARCHIVE.md
+    - docs/specs/SPEC_operator_audit_surface.md
+    - docs/DESIGN.md
+  # Files the change may add (any new module or test under src/).
+  new_files:
+    - src/**
+  forbidden:
+    - src/api/generated/**
+    - docs/backend/**
+    - package.json
+    - package-lock.json
+    - tsconfig*.json
+    - vite.config.ts
+    - eslint.config.js
+    - .markdownlint-cli2.mjs
+    - .github/**
+    - infra/**
+    - docker/**
+    - scripts/**
+    - Dockerfile
+    - bundle-budget.config.json
+
+applies:
+  functional: all          # operator-i18n.f01 .. operator-i18n.f18
+  quality:
+    - quality.q01
+    - quality.q02
+    - quality.q03
+    - quality.q04
+    - quality.q05
+    - quality.q06
+    - quality.q07
+    - quality.q08
+    - quality.q09
+    - quality.q10
+    - quality.q11
+    - quality.q12
+    - quality.q13
+  process:
+    - process.p01
+    - process.p02
+    - process.p03
+    - process.p04
+    - process.p05
+    - process.p06
+    - process.p07
+    - process.p08
+    - process.p09
+    # process.p10 (owning behaviour spec) is users-csv only: the operator audit spec does not
+    # describe chrome text, so the roadmap milestone is the owning artifact here.
+    - process.p11
+    - process.p12
+    - process.p13
+
+check_counts:
+  functional: 18
+  quality: 13
+  process: 12
+  total: 43

@@ -1,0 +1,100 @@
+id: users-csv
+title: Export the admin user list to CSV
+prompt: I want to export the user list to CSV
+area:
+  - src/admin/AdminUsersPage.tsx
+  - src/api/adminUsers.ts
+summary: >-
+  Add a CSV export to the admin user administration page. It downloads, in the browser and
+  without any new request or endpoint, every user matching the current search, role and status
+  filters in the current sort order across all pages, as an RFC 4180, UTF-8-with-BOM file with
+  14 fixed columns, a spreadsheet formula-injection guard, localized header labels and a
+  localized button that is admin-only and disabled when nothing matches. The admin user
+  management spec and the changelog are updated.
+
+fixture:
+  repository: https://github.com/kamkie/technical-interview-frontend
+  upstream_commit: 946a2081f84381ffc3b4a494467479a5b6886ead
+  # The benchmark base commit is the upstream commit with the repository's agent instructions
+  # (.agents/, AGENTS.md and similar) removed, so no workflow inherits the fixture's own AI
+  # process. Its docs still mention .agents/references/*.md, which no longer exist.
+  base: upstream_commit minus agent instructions (marker file .bdk-eval-base)
+  setup: npm ci
+  node: 24.x
+  npm: 11.x
+
+hidden_spec: spec.md
+functional_checks: checks.yaml
+hidden_tests: src/__bench__/users-csv.test.tsx
+
+scope:
+  # Existing files the change may modify (process.p06).
+  allowed:
+    - src/admin/AdminUsersPage.tsx
+    - src/admin/AdminUsersPage.test.tsx
+    - src/api/adminUsers.ts
+    - src/api/adminUsers.test.ts
+    - src/i18n/messages.ts
+    - src/i18n/messages.test.ts
+    - src/ui/**
+    - src/index.css
+    - src/mock-api/handler.ts
+    - docs/specs/SPEC_admin_user_management.md
+    - docs/DESIGN.md
+    - CHANGELOG.md
+    - ROADMAP.md
+  # Files the change may add (any new module or test under src/).
+  new_files:
+    - src/**
+  forbidden:
+    - src/api/generated/**
+    - docs/backend/**
+    - package.json
+    - package-lock.json
+    - tsconfig*.json
+    - vite.config.ts
+    - eslint.config.js
+    - .markdownlint-cli2.mjs
+    - .github/**
+    - infra/**
+    - docker/**
+    - scripts/**
+    - Dockerfile
+    - bundle-budget.config.json
+
+applies:
+  functional: all          # users-csv.f01 .. users-csv.f19
+  quality:
+    - quality.q01
+    - quality.q02
+    - quality.q03
+    - quality.q04
+    - quality.q05
+    - quality.q06
+    - quality.q07
+    - quality.q08
+    - quality.q09
+    - quality.q10
+    - quality.q11
+    - quality.q12
+    - quality.q13
+  process:
+    - process.p01
+    - process.p02
+    - process.p03
+    - process.p04
+    - process.p05
+    - process.p06
+    - process.p07
+    - process.p08
+    - process.p09
+    - process.p10
+    - process.p11
+    - process.p12
+    - process.p13
+
+check_counts:
+  functional: 19
+  quality: 13
+  process: 13
+  total: 45

@@ -1,0 +1,319 @@
+# Functional checks for operator-i18n. Harness helpers (H-i18n, H-sweep, H-operator) are defined
+# in checklist/schema.md. All tests live in src/__bench__/operator-i18n.test.tsx.
+#
+# "Polish pseudo-locale render" = renderWithCatalog(<RouterProvider router={createMemoryRouter(
+#   [{ path, element }], { initialEntries: [url] })} />, { rows: pseudoRows() }), with
+#   operatorFetch() answering the operator endpoints. pseudoRows() covers every UI_MESSAGES key
+#   of the final tree, so every keyed string renders as ⟦English⟧.
+# "sweep(root, { skip })" = H-sweep unkeyedText(root, ALLOWLIST) ignoring the subtrees in skip;
+#   the check asserts it returns [].
+#
+# H-operator data:
+#   auditPage(): content [
+#     { id: 2, action: 'CREATE', targetType: 'CATEGORY', targetId: 3, actorLogin: 'admin-user',
+#       summary: 'Created category Java.', createdAt: '2026-06-07T08:30:00Z' },
+#     { id: 1, action: 'LOGIN_SUCCESS', targetType: 'AUTHENTICATION', targetId: 9,
+#       actorLogin: 'kamkie', summary: 'Signed in.', createdAt: '2026-06-06T08:30:00Z',
+#       details: { ip: '10.0.0.1' } } ],
+#     number 0, size 20, numberOfElements 2, totalElements 2, totalPages 1, first true, last true
+#   surface(): audit { auditLogEndpoint '/api/admin/audit-logs', totalEntries 5 };
+#     runtime { technicalOverviewEndpoint '/', technicalOverview {
+#       build { name 'technical-interview-demo', group 'com.example', artifact 'technical-interview-demo',
+#               version '1.0.0', time '2026-06-01T10:00:00Z' },
+#       git { branch 'main', shortCommitId 'abc1234', commitTime '2026-06-01T09:00:00Z' },
+#       runtime { applicationName 'technical-interview-demo', javaVersion '24',
+#                 javaVendor 'Eclipse Adoptium', activeProfiles ['local'] },
+#       dependencies { 'spring-boot': '3.5.0' },
+#       configuration { pagination { defaultPageSize 20, maxPageSize 100 },
+#         session { storeType 'jdbc', timeout 'PT30M', cookieName 'sid' },
+#         observability { exposedEndpoints ['health','info'], healthProbesEnabled true,
+#                         tracingSamplingProbability 0.1 },
+#         documentation { openApiVersion '3.1' },
+#         security { csrfEnabled false, publicApiPathPattern '/api/**' },
+#         shutdown { serverShutdown 'graceful' } } } };
+#     operations { applicationHealthStatus 'UP', livenessState 'CORRECT',
+#       readinessState 'ACCEPTING_TRAFFIC', actuatorHealthEndpoint '/actuator/health',
+#       actuatorInfoEndpoint '/actuator/info', actuatorPrometheusEndpoint '/actuator/prometheus' }
+#   ALLOWLIST: every string value above, the joined forms 'local' and 'health, info',
+#     JSON.stringify({ ip: '10.0.0.1' }, null, 2), formatTimestamp() of every timestamp above
+#     and of __APP_BUILD_TIME__, __APP_NAME__, __APP_VERSION__, 'test' (Vite mode), backend
+#     problem messages used in the test, and the raw identifiers of AuditTargetType and
+#     AuditAction (so raw enum display is judged only by operator-i18n.f08).
+
+- id: operator-i18n.f01
+  group: functional
+  check: >-
+    On `/operator` with Polish active, the audit filter form is fully localized: field labels,
+    the "all" options and every target type and action option label.
+  verify:
+    kind: test
+    how: >-
+      Polish pseudo-locale render of OperatorPage at '/operator' with operatorFetch(); await
+      findByText('Created category Java.'). sweep(document.querySelector('form')) returns [].
+      Also: the target type select has 6 options and the action select 8 options, and every
+      option's text is a single ⟦...⟧ segment (isSingleTemplate).
+  source: ROADMAP.md T-I18N-011, spec.md#t-i18n-011-operator-audit-chrome-operator
+
+- id: operator-i18n.f02
+  group: functional
+  check: >-
+    On `/operator` with Polish active, the page and table chrome is fully localized: section and
+    container names, the heading, the caption, the column headers and sort button names, the
+    table region name and both pagination names.
+  verify:
+    kind: test
+    how: >-
+      Same render as operator-i18n.f01. sweep(container, { skip: [the <form>, the <tbody>, the
+      toolbar summary span `[aria-live="polite"]`] }) returns []. Covers the `aria-label`s
+      'Operator audit', 'Audit query controls', 'Audit filters' (the form element's own
+      attribute is outside the skipped subtree check, so it is swept here), 'Audit table
+      controls', 'Audit pagination top', 'Audit pagination', 'Scrollable operator audit table',
+      the h2, the caption, thead text and sort button names.
+  source: ROADMAP.md T-I18N-011
+
+- id: operator-i18n.f03
+  group: functional
+  check: >-
+    On `/operator` with Polish active, row chrome and the expanded entry details are fully
+    localized: the `ID` prefix, the expand buttons' names and the detail labels, headings,
+    entry label and empty-details text.
+  verify:
+    kind: test
+    how: >-
+      Same render as operator-i18n.f01; fireEvent.click(getByText('Created category Java.'))
+      (expands the entry without structured details), then click 'Signed in.' (expands the
+      other entry; only one is expanded at a time, so run the sweep after each click).
+      sweep(document.querySelector('tbody')) returns [] after each click; the expand buttons in
+      tbody each have an accessible name for which isSingleTemplate is true.
+  source: ROADMAP.md T-I18N-011
+
+- id: operator-i18n.f04
+  group: functional
+  check: >-
+    The audit summary line is localized in every state, with singular and plural counts as
+    separate messages: loading, error, one entry, several entries.
+  verify:
+    kind: test
+    how: >-
+      Four Polish pseudo-locale renders, each reading the toolbar summary span
+      `[aria-live="polite"]`: (a) audit request never settles -> text is a single template;
+      (b) audit request answers `new Response(null, { status: 503 })` (backend unavailable, one
+      automatic retry) -> after the alert shows, single template; (c) auditPage with one row and
+      totalElements 1 -> single template; (d) default auditPage (totalElements 2) -> single
+      template. In (c) and (d) the text contains the numbers of the window and total; and the
+      text of (c) with numbers removed differs from (d) with numbers removed (singular and
+      plural come from different messages). sweep of the span returns [] in all four.
+  source: ROADMAP.md T-I18N-011 (formatAuditSummary), spec.md (plurals)
+
+- id: operator-i18n.f05
+  group: functional
+  check: The audit state blocks (loading, empty, error) are localized.
+  verify:
+    kind: test
+    how: >-
+      Three Polish pseudo-locale renders of '/operator': (a) audit request never settles; (b)
+      auditPage({ content: [], numberOfElements: 0, totalElements: 0, totalPages: 0 }); (c) 503
+      without body. In each, wait for `.state-block` to appear, then sweep each `.state-block`
+      element returns []; in (c) the alert text is the localized backend-unavailable message
+      (already keyed at base) and the state block title is keyed.
+  source: ROADMAP.md T-I18N-011 (StateBlock loading/empty/error strings)
+
+- id: operator-i18n.f06
+  group: functional
+  check: >-
+    Strings that combine words with values are single message templates, not concatenated
+    fragments: the summary window, the `ID {id}` subtext, the row button name and the entry
+    label, and the `{group} details unavailable.` texts.
+  verify:
+    kind: test
+    how: >-
+      Polish pseudo-locale renders: on '/operator' (default data) isSingleTemplate is true for
+      the toolbar summary text, for each `.table-subtext` span in tbody, for each tbody button's
+      accessible name, and, after expanding entry 2, for the `dd` that follows the first `dt`
+      of the detail list (the entry label). On '/operator/diagnostics' with surface({ runtime: {
+      technicalOverviewEndpoint: '/' } }) (no build, git or runtime data), isSingleTemplate is
+      true for each `p.session-message` inside the runtime summary card (the card containing the
+      endpoint value '/').
+  source: spec.md (composed strings are single templates), ROADMAP.md T-I18N-011 (createAuditEntryLabel)
+
+- id: operator-i18n.f07
+  group: functional
+  check: >-
+    Audit enum values keep their identifiers while only labels localize: selecting a localized
+    option writes the identifier to the URL and to the audit request, and identifiers in the
+    URL select the matching localized option.
+  verify:
+    kind: test
+    how: >-
+      Polish pseudo-locale render of '/operator?targetType=BOOK&action=UPDATE'; the target type
+      select has value 'BOOK' and its selected option's text is a single ⟦...⟧ template; the
+      audit request URL contains `targetType=BOOK&action=UPDATE`. Then fireEvent.change(target
+      type select, { target: { value: 'USER_ACCOUNT' } }); within 1 s the router location search
+      contains `targetType=USER_ACCOUNT` and a request to `/api/admin/audit-logs` contains
+      `targetType=USER_ACCOUNT`. Every option `value` of both selects is one of '' or a contract
+      identifier (AuditTargetType / AuditAction values) and none contains ⟦.
+  source: ROADMAP.md M-I18N-004 acceptance criterion 2
+
+- id: operator-i18n.f08
+  group: functional
+  check: >-
+    Table and detail cells show the localized display label for known audit enum values and the
+    raw identifier for values the frontend does not know.
+  verify:
+    kind: test
+    how: >-
+      spec-only. Polish pseudo-locale render of '/operator' with auditPage plus a third row
+      { id: 5, action: 'ARCHIVE', targetType: 'SHELF', targetId: 4, actorLogin: 'robot',
+      summary: 'Archived shelf.' } (cast through unknown). In the row of 'Created category
+      Java.', the Target cell's first text node and the Action cell text are single ⟦...⟧
+      templates (not 'CATEGORY' / 'CREATE'); in the row of 'Archived shelf.' the Target cell
+      text starts with 'SHELF' and the Action cell text is 'ARCHIVE'. After expanding entry 2,
+      the detail values next to the 'Target type' and 'Action' labels are single templates.
+  source: spec.md (Decision on enum labels in cells), ROADMAP.md M-I18N-004 acceptance criteria 1 and 2
+
+- id: operator-i18n.f09
+  group: functional
+  check: >-
+    On `/operator/diagnostics` with Polish active, card titles, group headings, section names
+    and the link to the audit page are localized.
+  verify:
+    kind: test
+    how: >-
+      Polish pseudo-locale render of OperatorDiagnosticsPage at '/operator/diagnostics' with
+      operatorFetch() (fresh session()); await findByText('abc1234'). Every h2 and h3, every
+      `a` element's text and every element `aria-label` under the container, when passed to
+      sweep, returns []; the link still points to '/operator'.
+  source: ROADMAP.md T-I18N-012 (card titles)
+
+- id: operator-i18n.f10
+  group: functional
+  check: On `/operator/diagnostics` with Polish active, every metadata label is localized.
+  verify:
+    kind: test
+    how: >-
+      Same render as operator-i18n.f09. For every `dt` element in the page, sweep(dt) returns []
+      (covers operational status, runtime summary build/git/runtime, audit summary,
+      configuration and frontend build labels; 32 `dt` elements with the full surface()).
+  source: ROADMAP.md T-I18N-012 (metadata labels)
+
+- id: operator-i18n.f11
+  group: functional
+  check: Boolean diagnostics values render as localized yes/no words.
+  verify:
+    kind: test
+    how: >-
+      Same render as operator-i18n.f09. The `dd` paired with the 'Health probes' `dt` and the
+      one paired with the 'CSRF enabled' `dt` (located by the dt text with ⟦⟧ removed) are single
+      ⟦...⟧ templates, and their texts with brackets removed are 'Yes' and 'No'.
+  source: ROADMAP.md T-I18N-012 (literal Yes/No values)
+
+- id: operator-i18n.f12
+  group: functional
+  check: >-
+    The diagnostics non-ready states are localized: loading and error state blocks, the
+    "details unavailable" texts of a partial payload, the frontend build section shown while the
+    overview is unavailable, and the signed-out state of both operator pages.
+  verify:
+    kind: test
+    how: >-
+      Polish pseudo-locale renders, each sweeping the whole container and asserting []:
+      (a) diagnostics, operator-surface request never settles; (b) diagnostics, 503 without body,
+      after the alert shows; (c) diagnostics with surface({ audit: {}, runtime: {}, operations:
+      {} }) after 'Runtime' group headings render; (d) diagnostics with session({ authenticated:
+      false }); (e) OperatorPage with session({ authenticated: false }).
+  source: ROADMAP.md T-I18N-012, T-I18N-011 (state blocks)
+
+- id: operator-i18n.f13
+  group: functional
+  check: >-
+    With English active, the operator pages render exactly the same English text as before,
+    including singular and plural counts and composed strings.
+  verify:
+    kind: test
+    how: >-
+      Render both pages without I18nProvider (English defaults) and with operatorFetch().
+      Assert these exact texts or names are present: heading 'Audit rows'; form 'Audit
+      filters'; labels 'Target type', 'Action', 'Actor login'; options 'All targets', 'Book',
+      'User account', 'All actions', 'Login success', 'Session rejection'; summary 'Showing 1-2
+      of 2 audit entries' and, with one row, 'Showing 1-1 of 1 audit entry'; button 'Details for
+      audit entry 2'; subtext 'ID 3'; after expanding entry 2: 'Structured details', 'No
+      structured details available.', 'audit entry 2'. Diagnostics: headings 'Operational
+      status', 'Runtime summary', 'Audit summary', 'Dependencies', 'Configuration', 'Frontend
+      build'; dt 'Health probes' with dd 'Yes', dt 'CSRF enabled' with dd 'No'; link 'Browse
+      audit rows'; with surface({ runtime: { technicalOverviewEndpoint: '/' } }): 'Build details
+      unavailable.', 'Git details unavailable.', 'Runtime details unavailable.'; loading title
+      'Loading operator overview'.
+  source: spec.md#t-i18n-011-operator-audit-chrome-operator ("The English rendering must stay exactly as it is today"), ROADMAP.md acceptance criterion 1 (English as per-key fallback)
+
+- id: operator-i18n.f14
+  group: functional
+  check: >-
+    English is only a per-key fallback: with a catalog that translates some keys, those render
+    translated, the rest render their English defaults, and no raw message key appears.
+  verify:
+    kind: test
+    how: >-
+      renderWithCatalog of '/operator' with rows = pseudoRows() filtered to keys whose English
+      default is 'Operator audit' or 'Showing {start}-{end} of {total}' or 'Rows per page' (keys
+      that exist at the base commit). Assert: the page section's accessible name is '⟦Operator
+      audit⟧' (the reused key, or any key with that English text, is translated); the label
+      'Target type' renders in plain English; no text node or aria-label in the page matches
+      /\bui\.[a-z0-9-]+\.[a-z0-9._-]+/ (a raw key).
+  source: 'ROADMAP.md acceptance criterion 1, fixture docs/DESIGN.md (UI language: missing keys fall back to English)'
+
+- id: operator-i18n.f15
+  group: functional
+  check: >-
+    The three orphaned keys are removed from the registry, and no mock seed row refers to a key
+    that is not in the registry.
+  verify:
+    kind: command
+    how: >-
+      `! grep -nE "'(ui\.theme\.option-title|ui\.admin-localization\.status|ui\.admin-localization\.missing-locales)'"
+      src/i18n/messages.ts && node bench/scripts/check-mock-seed-keys.mjs`; the script imports
+      `UI_MESSAGES` from the final `src/i18n/messages.ts` (via `npx tsx`) and every `ui.*` key
+      string in `createChromeLocalizations` of `src/mock-api/handler.ts`, and fails if a seeded
+      key is not a registry key. Pass on exit status 0.
+  source: ROADMAP.md T-I18N-013
+
+- id: operator-i18n.f16
+  group: functional
+  check: Every key in the registry has a call site, including every key the change added.
+  verify:
+    kind: command
+    how: >-
+      `node bench/scripts/check-registry-call-sites.mjs`: for each key of `UI_MESSAGES` (final
+      tree) it searches non-test source outside `src/i18n/messages.ts` for the key as a quoted
+      string literal (`'key'`, `"key"` or a template literal without expressions); a key also
+      counts as used when some template literal in non-test source has a static prefix ending
+      in `.` that the key starts with (for example `ui.language.${code}` covers `ui.language.pl`)
+      and the remainder of the key is one segment. Pass when no key is unused. At the base
+      commit exactly the three T-I18N-013 keys fail.
+  source: ROADMAP.md M-I18N-004 acceptance criterion 3
+
+- id: operator-i18n.f17
+  group: functional
+  check: >-
+    Existing registry entries are preserved: apart from the three orphans, no pre-existing key
+    is removed or renamed and no pre-existing English default changes.
+  verify:
+    kind: command
+    how: >-
+      `node bench/scripts/compare-registry.mjs $BASE`: loads `UI_MESSAGES` from
+      `git show $BASE:src/i18n/messages.ts` and from the final file and passes when every base
+      key except the three orphans exists in the final registry with an identical value.
+  source: spec.md#registry-conventions, ROADMAP.md acceptance criterion 1 (English fallback text)
+
+- id: operator-i18n.f18
+  group: functional
+  check: >-
+    The final reply notes that backend translation seeds for the new keys are a backend-owned
+    follow-up, and the change does not touch backend-owned artifacts.
+  verify:
+    kind: judge
+    how: >-
+      Evidence: reply, plus the output of `git diff --name-only $BASE -- docs/backend` (must be
+      empty for a yes). Question: "Does the final reply (or a changelog or roadmap line in the
+      diff) state that translations or seed rows for the new message keys must be provided on
+      the backend side, as a follow-up outside this change, and is the command output empty?"
+  source: ROADMAP.md M-I18N-004 acceptance criterion 4
