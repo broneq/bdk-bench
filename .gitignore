@@ -1,0 +1,5 @@
+node_modules/
+# Run state: working copies live outside the repository; this holds the ledger, raw session output and debug logs.
+.runs/
+.env
+.DS_Store
