@@ -17,12 +17,12 @@ export const LEDGER_FILE = join(RUNS_DIR, "budget.json");
 /** The user cache directory: XDG_CACHE_HOME, else `$HOME/.cache`, else the `.cache` of the account's home directory from the password database (`os.homedir()` would echo `$HOME`); an empty or relative value is ignored. */
 export function cacheHome(
   env: Readonly<Record<string, string | undefined>>,
-  fallbackHome: string = userInfo().homedir,
+  fallbackHome: () => string = () => userInfo().homedir,
 ): string {
   const xdg = env.XDG_CACHE_HOME;
   if (xdg !== undefined && isAbsolute(xdg)) return xdg;
   const home = env.HOME;
-  return join(home !== undefined && isAbsolute(home) ? home : fallbackHome, ".cache");
+  return join(home !== undefined && isAbsolute(home) ? home : fallbackHome(), ".cache");
 }
 
 /**

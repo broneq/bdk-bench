@@ -1,7 +1,7 @@
 import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { isAbsolute, join } from "node:path";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
   ROOT_DIR,
@@ -45,21 +45,34 @@ describe("cacheHome", () => {
   it("prefers XDG_CACHE_HOME, then HOME, then the home directory", () => {
     expect(cacheHome({ XDG_CACHE_HOME: "/c", HOME: "/h" })).toBe("/c");
     expect(cacheHome({ HOME: "/h" })).toBe("/h/.cache");
-    expect(cacheHome({}, "/pw")).toBe("/pw/.cache");
+    expect(cacheHome({}, () => "/pw")).toBe("/pw/.cache");
   });
 
   it("ignores an empty or relative XDG_CACHE_HOME and HOME", () => {
     expect(cacheHome({ XDG_CACHE_HOME: "", HOME: "/h" })).toBe("/h/.cache");
     expect(cacheHome({ XDG_CACHE_HOME: "rel", HOME: "/h" })).toBe("/h/.cache");
-    expect(cacheHome({ XDG_CACHE_HOME: "", HOME: "" }, "/pw")).toBe("/pw/.cache");
-    expect(cacheHome({ HOME: "rel" }, "/pw")).toBe("/pw/.cache");
+    expect(cacheHome({ XDG_CACHE_HOME: "", HOME: "" }, () => "/pw")).toBe("/pw/.cache");
+    expect(cacheHome({ HOME: "rel" }, () => "/pw")).toBe("/pw/.cache");
   });
 });
 
-describe("cacheHome without an injected fallback", () => {
-  it("is absolute even when HOME is empty or relative", () => {
-    expect(isAbsolute(cacheHome({ HOME: "" }))).toBe(true);
-    expect(isAbsolute(cacheHome({ HOME: "rel" }))).toBe(true);
+describe("cacheHome fallback", () => {
+  afterEach(() => vi.unstubAllEnvs());
+
+  it("does not read the fallback when HOME or XDG_CACHE_HOME is absolute", () => {
+    const boom = (): string => {
+      throw new Error("fallback read");
+    };
+    expect(cacheHome({ HOME: "/h" }, boom)).toBe("/h/.cache");
+    expect(cacheHome({ XDG_CACHE_HOME: "/c" }, boom)).toBe("/c");
+  });
+
+  it("is absolute for the process environment when HOME is empty or relative", () => {
+    vi.stubEnv("XDG_CACHE_HOME", "");
+    for (const home of ["", "rel"]) {
+      vi.stubEnv("HOME", home);
+      expect(isAbsolute(cacheHome(process.env))).toBe(true);
+    }
   });
 });
 

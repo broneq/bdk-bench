@@ -1,5 +1,3 @@
-import { homedir } from "node:os";
-import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { promptfooEnv } from "./tools.ts";
@@ -15,12 +13,6 @@ describe("promptfooEnv", () => {
     const dir = promptfooEnv({ HOME: "/h" }).PROMPTFOO_CONFIG_DIR;
     expect(dir).toBe("/h/.cache/bdk-bench/promptfoo");
     expect(dir).not.toContain(".promptfoo");
-  });
-
-  it("falls back to the home directory when HOME is unset", () => {
-    expect(promptfooEnv({}).PROMPTFOO_CONFIG_DIR).toBe(
-      join(homedir(), ".cache", "bdk-bench", "promptfoo"),
-    );
   });
 
   it("turns telemetry and update checks off", () => {
