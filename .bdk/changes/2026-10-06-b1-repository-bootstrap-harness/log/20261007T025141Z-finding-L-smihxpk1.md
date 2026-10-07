@@ -3,7 +3,7 @@ schema: 1
 id: L-smihxpk1
 type: finding
 summary: userInfo() default param runs on every cacheHome call; throws without a passwd entry even when HOME is set
-status: proposed
+status: resolved
 source: agent:integration-reviewer
 author: Przemysław Broniszewski <przemek@broniszewski.net>
 at: 2026-10-07T02:51:41.108Z
@@ -28,3 +28,5 @@ Suggested fix: Read the fallback lazily, only in the branch that needs it, e.g. 
 Triaged as should-fix at 2026-10-07T02:53:16.855Z
 
 Decided fix at 2026-10-07T02:53:49.708Z
+
+Resolved as resolved at 2026-10-07T02:56:04.145Z: fixed in 20e4df7
