@@ -3,7 +3,7 @@ schema: 1
 id: L-bndhs6ue
 type: finding
 summary: "cacheHome HOME fallback is ineffective: os.homedir() returns the same empty or relative $HOME"
-status: proposed
+status: resolved
 source: agent:integration-reviewer
 author: Przemysław Broniszewski <przemek@broniszewski.net>
 at: 2026-10-06T21:39:51.266Z
@@ -29,3 +29,5 @@ Suggested fix: Fall back to `os.userInfo().homedir` (read from the password data
 Triaged as should-fix at 2026-10-06T21:40:36.881Z
 
 Decided fix at 2026-10-07T02:45:44.377Z
+
+Resolved as resolved at 2026-10-07T02:50:05.407Z: fixed in 4d6e29d
