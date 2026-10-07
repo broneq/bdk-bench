@@ -15,7 +15,9 @@ refs:
   - L-bqedx5xr
   - configuration
   - BDK-TQ-1
-level: should-fix
+review: true
+level: blocker
+disposition: fix
 ---
 
 Problem: Severity medium, not blocking. The fix for L-bqedx5xr (harness/paths.ts:18-23) falls back to `homedir()` when `HOME` is empty or relative, but on POSIX Node's `os.homedir()` returns `$HOME` itself when it is set. Probed on Node v24.21.0: `HOME= node -e 'os.homedir()'` gives `""` and `HOME=rel` gives `"rel"`; with XDG_CACHE_HOME unset, `HOME=` makes `SANDBOX_DIR` `.cache/bdk-bench` and `HOME=rel` makes it `rel/.cache/bdk-bench`, both relative, exactly the case the finding asked to close. Only the XDG_CACHE_HOME half of the fix works. The new tests at harness/paths.test.ts:46-47 expect `join(homedir(), ".cache")` while the test process has a real HOME, so they pass and cannot fail for the production path, where `env` and `homedir()` read the same `process.env.HOME` (BDK-TQ-1).
@@ -25,3 +27,5 @@ Why it matters: `promptfooEnv` (harness/tools.ts:23) then sets PROMPTFOO_CONFIG_
 Suggested fix: Fall back to `os.userInfo().homedir` (read from the password database, it ignores $HOME; probed: `HOME= node -e 'os.userInfo().homedir'` gives `/Users/broneq`), or reject a non-absolute result and throw. Make the test independent of the test process's HOME, e.g. assert that `cacheHome({ HOME: "" })` and `cacheHome({ HOME: "rel" })` are absolute, and inject the fallback if needed to test it deterministically.
 
 Triaged as should-fix at 2026-10-06T21:40:36.881Z
+
+Decided fix at 2026-10-07T02:45:44.377Z

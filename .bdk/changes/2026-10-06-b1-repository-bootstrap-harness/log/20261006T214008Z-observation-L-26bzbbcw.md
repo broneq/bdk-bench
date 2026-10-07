@@ -3,7 +3,7 @@ schema: 1
 id: L-26bzbbcw
 type: observation
 summary: "Implementer report of A-f1miv2g3 carries a stale simplifier body and files: [] despite six changed files"
-status: proposed
+status: accepted
 source: agent:integration-reviewer
 author: Przemysław Broniszewski <przemek@broniszewski.net>
 at: 2026-10-06T21:40:08.072Z
@@ -14,7 +14,9 @@ refs:
   - L-v6x9tm6a
   - L-2jjmnq7b
   - L-bqedx5xr
+review: true
 level: nice-to-have
+disposition: defer
 ---
 
 Problem: The implementer report for A-f1miv2g3 has `files: []` and its body is "Simplifier report A-1pnrlzrw (attempt 2)" describing providers.ts and runner.ts, not this ticket. It names none of the fixed entries (L-v6x9tm6a, L-2jjmnq7b, L-bqedx5xr) by id, which the review-fix contract requires. The code in 1c946e8 does address all three (README discard reasons, resultsFile unification, cacheHome), the last only partly (see L-bndhs6ue).
@@ -24,3 +26,5 @@ Why it matters: Traceability from ledger entry to fix rests on the report; the o
 Suggested fix: Have the orchestrator resolve the three entries against commit 1c946e8 directly, and keep L-bqedx5xr open until L-bndhs6ue is settled.
 
 Triaged as nice-to-have at 2026-10-06T21:40:37.222Z
+
+Decided defer at 2026-10-07T02:45:44.702Z

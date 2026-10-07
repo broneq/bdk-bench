@@ -17,6 +17,7 @@ import {
   readVersions,
   resultsFile,
   sandboxOf,
+  seriesDir,
 } from "../../paths.ts";
 import { sessionProvider } from "../../providers.ts";
 import { readRows } from "../../results.ts";
@@ -160,7 +161,7 @@ export function smokeRunner(
         `${options.probe ? "probe" : "series"}-${seriesStamp()}`,
         (name) => readRows(resultsOf(name)).length > 0,
       );
-      const dir = join(dirs.runsDir, "series", SUITE, series);
+      const dir = seriesDir(dirs.runsDir, SUITE, series);
       const sandbox = sandboxOf(SUITE, series, dirs.sandboxDir, dirs.rootDir);
       rmSync(dir, { recursive: true, force: true });
       rmSync(sandbox, { recursive: true, force: true });
@@ -204,11 +205,11 @@ export function smokeRunner(
       const dir = mkdtempSync(join(tmpdir(), "bench-smoke-check-"));
       try {
         for (const runs of [1, 5]) {
-          const seriesDir = join(dir, String(runs));
+          const checkDir = join(dir, String(runs));
           const setup = describeSmoke({
             series: "check",
-            dir: seriesDir,
-            sandbox: seriesDir,
+            dir: checkDir,
+            sandbox: checkDir,
             runs,
             budgetUsd: DEFAULT_BUDGET_USD,
             runCapUsd: DEFAULT_RUN_CAP_USD,
@@ -220,7 +221,7 @@ export function smokeRunner(
             benchCommit: "0".repeat(40),
             sdkVersion: "0",
           });
-          validateConfig(dirs.rootDir, renderSeries(setup, seriesDir).configFile);
+          validateConfig(dirs.rootDir, renderSeries(setup, checkDir).configFile);
         }
       } finally {
         rmSync(dir, { recursive: true, force: true });

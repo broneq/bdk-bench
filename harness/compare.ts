@@ -1,9 +1,7 @@
 // Two series of a suite compared: the counted rows of each series, grouped by
 // workflow, item and metric, under the difference rule. No other series is pooled in.
-import { existsSync, readdirSync } from "node:fs";
-import { join } from "node:path";
 
-import { resultsFile } from "./paths.ts";
+import { resultsFile, seriesNames } from "./paths.ts";
 import { readRows } from "./results.ts";
 import type { ResultRow } from "./results.ts";
 import { formatValues, formatVerdict } from "./stats.ts";
@@ -84,7 +82,6 @@ export function runCompare(
   candidate: string,
   io: Io,
 ): number {
-  const dir = join(resultsDir, suite);
   const read = (name: string): NamedSeries => ({
     name,
     rows: readRows(resultsFile(resultsDir, suite, name)),
@@ -92,12 +89,7 @@ export function runCompare(
   const series = [read(baseline), read(candidate)] as const;
   const missing = series.find((named) => named.rows.length === 0);
   if (missing !== undefined) {
-    const known = existsSync(dir)
-      ? readdirSync(dir)
-          .filter((file) => file.endsWith(".jsonl"))
-          .map((file) => file.slice(0, -".jsonl".length))
-          .sort()
-      : [];
+    const known = seriesNames(resultsDir, suite);
     io.printError(
       `${suite} has no rows of series ${missing.name}; its series: ${known.join(", ") || "none"}`,
     );

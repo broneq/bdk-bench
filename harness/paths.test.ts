@@ -1,9 +1,17 @@
-import { mkdtempSync, writeFileSync } from "node:fs";
-import { homedir, tmpdir } from "node:os";
-import { join } from "node:path";
+import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { isAbsolute, join } from "node:path";
 import { describe, expect, it } from "vitest";
 
-import { ROOT_DIR, cacheHome, readVersions, resultsFile, sandboxOf } from "./paths.ts";
+import {
+  ROOT_DIR,
+  cacheHome,
+  readVersions,
+  resultsFile,
+  sandboxOf,
+  seriesDir,
+  seriesNames,
+} from "./paths.ts";
 
 describe("sandboxOf", () => {
   it("places a series' sandbox under the sandbox root and the checkout name", () => {
@@ -37,14 +45,39 @@ describe("cacheHome", () => {
   it("prefers XDG_CACHE_HOME, then HOME, then the home directory", () => {
     expect(cacheHome({ XDG_CACHE_HOME: "/c", HOME: "/h" })).toBe("/c");
     expect(cacheHome({ HOME: "/h" })).toBe("/h/.cache");
-    expect(cacheHome({})).toBe(join(homedir(), ".cache"));
+    expect(cacheHome({}, "/pw")).toBe("/pw/.cache");
   });
 
   it("ignores an empty or relative XDG_CACHE_HOME and HOME", () => {
     expect(cacheHome({ XDG_CACHE_HOME: "", HOME: "/h" })).toBe("/h/.cache");
     expect(cacheHome({ XDG_CACHE_HOME: "rel", HOME: "/h" })).toBe("/h/.cache");
-    expect(cacheHome({ XDG_CACHE_HOME: "", HOME: "" })).toBe(join(homedir(), ".cache"));
-    expect(cacheHome({ HOME: "rel" })).toBe(join(homedir(), ".cache"));
+    expect(cacheHome({ XDG_CACHE_HOME: "", HOME: "" }, "/pw")).toBe("/pw/.cache");
+    expect(cacheHome({ HOME: "rel" }, "/pw")).toBe("/pw/.cache");
+  });
+});
+
+describe("cacheHome without an injected fallback", () => {
+  it("is absolute even when HOME is empty or relative", () => {
+    expect(isAbsolute(cacheHome({ HOME: "" }))).toBe(true);
+    expect(isAbsolute(cacheHome({ HOME: "rel" }))).toBe(true);
+  });
+});
+
+describe("seriesDir", () => {
+  it("names one directory per series under the runs directory", () => {
+    expect(seriesDir("/x/.runs", "smoke", "s1")).toBe("/x/.runs/series/smoke/s1");
+  });
+});
+
+describe("seriesNames", () => {
+  it("lists the series of a suite from its result files, sorted, and none when absent", () => {
+    const dir = mkdtempSync(join(tmpdir(), "results-"));
+    expect(seriesNames(dir, "smoke")).toEqual([]);
+    mkdirSync(join(dir, "smoke"));
+    writeFileSync(resultsFile(dir, "smoke", "b"), "");
+    writeFileSync(resultsFile(dir, "smoke", "a"), "");
+    writeFileSync(join(dir, "smoke", "notes.md"), "");
+    expect(seriesNames(dir, "smoke")).toEqual(["a", "b"]);
   });
 });
 
