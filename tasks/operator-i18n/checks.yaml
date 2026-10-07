@@ -260,7 +260,7 @@
       audit⟧' (the reused key, or any key with that English text, is translated); the label
       'Target type' renders in plain English; no text node or aria-label in the page matches
       /\bui\.[a-z0-9-]+\.[a-z0-9._-]+/ (a raw key).
-  source: 'ROADMAP.md acceptance criterion 1, fixture docs/DESIGN.md (UI language: missing keys fall back to English)'
+  source: "ROADMAP.md acceptance criterion 1, fixture docs/DESIGN.md (UI language: missing keys fall back to English)"
 
 - id: operator-i18n.f15
   group: functional

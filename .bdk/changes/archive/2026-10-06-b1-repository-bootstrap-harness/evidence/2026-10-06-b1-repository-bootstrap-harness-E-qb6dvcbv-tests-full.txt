@@ -1,0 +1,28 @@
+
+> bdk-bench@ test /Users/broneq/projects/bdk-bench
+> vitest run
+
+
+ RUN  v5.0.2 /Users/broneq/projects/bdk-bench
+
+
+ Test Files  20 passed (20)
+      Tests  179 passed (179)
+   Start at  04:50:24
+   Duration  2.23s (tests 73%, transform 18%, import 8%, worker 2%)
+
+exit 0
+
+> bdk-bench@ test /Users/broneq/projects/bdk-bench
+> vitest run
+
+
+ RUN  v5.0.2 /Users/broneq/projects/bdk-bench
+
+
+ Test Files  20 passed (20)
+      Tests  179 passed (179)
+   Start at  04:56:21
+   Duration  1.73s (tests 71%, transform 20%, import 7%, worker 2%)
+
+exit 0

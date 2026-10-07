@@ -25,25 +25,25 @@ With a non-English language active, every user-visible string on `/operator` and
 
 Key every string below through `t()` with its current English text as the English default. The English rendering must stay exactly as it is today.
 
-| Where                                 | Current English                                                                                                                                                         |
-| ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Page section `aria-label`             | `Operator audit` (reuse existing `ui.operator.title`)                                                                                                                   |
-| Section heading                       | `Audit rows`                                                                                                                                                            |
-| Container and form `aria-label`s      | `Audit query controls`, `Audit filters`, `Audit table controls`                                                                                                         |
-| Filter labels                         | `Target type`, `Action`, `Actor login`                                                                                                                                  |
-| Filter "all" options                  | `All targets`, `All actions`                                                                                                                                            |
-| Target type labels (`AUDIT_TARGET_TYPE_LABELS`) | `Authentication`, `Book`, `Category`, `Localization message`, `User account`                                                                                  |
-| Action labels (`AUDIT_ACTION_LABELS`) | `Create`, `Delete`, `Login failure`, `Login success`, `Logout`, `Session rejection`, `Update`                                                                          |
-| Toolbar summary (`formatAuditSummary`) | `Audit rows need attention.`, `Audit rows are loading.`, `{count} audit entry` / `{count} audit entries`, `Showing {start}-{end} of {total}` (reuse `ui.common.window-summary`) |
-| Pagination `aria-label`s              | `Audit pagination top`, `Audit pagination`                                                                                                                              |
-| State blocks                          | loading `Loading audit rows` / `Loading audit logs...`; error title `Audit rows unavailable`; empty `No audit rows found` / `No audit entries match these filters.`      |
-| Table region `aria-label`, caption    | `Scrollable operator audit table`, `Operator audit rows`                                                                                                                |
-| Column headers (also inside the sort buttons' names) | `Created`, `Target`, `Action`, `Actor`, `Summary`, `Details` (visually hidden)                                                                           |
-| Row target id                         | `ID {id}`                                                                                                                                                               |
-| Row expand button `aria-label`        | `Details for {label}`, where `{label}` is the entry label below                                                                                                         |
-| Entry label (`createAuditEntryLabel`) | `audit entry {id}` (or `audit entry {n}` by position when the id is missing)                                                                                            |
-| Expanded detail labels                | `Entry`, `Created`, `Target type`, `Target ID`, `Action`, `Actor`                                                                                                       |
-| Expanded detail headings and empty text | `Summary`, `Structured details`, `No structured details available.`                                                                                                   |
+| Where                                                | Current English                                                                                                                                                                 |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Page section `aria-label`                            | `Operator audit` (reuse existing `ui.operator.title`)                                                                                                                           |
+| Section heading                                      | `Audit rows`                                                                                                                                                                    |
+| Container and form `aria-label`s                     | `Audit query controls`, `Audit filters`, `Audit table controls`                                                                                                                 |
+| Filter labels                                        | `Target type`, `Action`, `Actor login`                                                                                                                                          |
+| Filter "all" options                                 | `All targets`, `All actions`                                                                                                                                                    |
+| Target type labels (`AUDIT_TARGET_TYPE_LABELS`)      | `Authentication`, `Book`, `Category`, `Localization message`, `User account`                                                                                                    |
+| Action labels (`AUDIT_ACTION_LABELS`)                | `Create`, `Delete`, `Login failure`, `Login success`, `Logout`, `Session rejection`, `Update`                                                                                   |
+| Toolbar summary (`formatAuditSummary`)               | `Audit rows need attention.`, `Audit rows are loading.`, `{count} audit entry` / `{count} audit entries`, `Showing {start}-{end} of {total}` (reuse `ui.common.window-summary`) |
+| Pagination `aria-label`s                             | `Audit pagination top`, `Audit pagination`                                                                                                                                      |
+| State blocks                                         | loading `Loading audit rows` / `Loading audit logs...`; error title `Audit rows unavailable`; empty `No audit rows found` / `No audit entries match these filters.`             |
+| Table region `aria-label`, caption                   | `Scrollable operator audit table`, `Operator audit rows`                                                                                                                        |
+| Column headers (also inside the sort buttons' names) | `Created`, `Target`, `Action`, `Actor`, `Summary`, `Details` (visually hidden)                                                                                                  |
+| Row target id                                        | `ID {id}`                                                                                                                                                                       |
+| Row expand button `aria-label`                       | `Details for {label}`, where `{label}` is the entry label below                                                                                                                 |
+| Entry label (`createAuditEntryLabel`)                | `audit entry {id}` (or `audit entry {n}` by position when the id is missing)                                                                                                    |
+| Expanded detail labels                               | `Entry`, `Created`, `Target type`, `Target ID`, `Action`, `Actor`                                                                                                               |
+| Expanded detail headings and empty text              | `Summary`, `Structured details`, `No structured details available.`                                                                                                             |
 
 Rules:
 
@@ -55,20 +55,20 @@ Rules:
 
 ## T-I18N-012: diagnostics chrome (`/operator/diagnostics`)
 
-| Where                                   | Current English                                                                                                                                                                                                  |
-| --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Page section `aria-label` (signed-out and signed-in) | `System diagnostics` (reuse existing `ui.route.diagnostics.title`)                                                                                                                                  |
-| Section `aria-label`s                   | `Diagnostics overview`, `Frontend build`                                                                                                                                                                         |
-| State blocks                            | loading `Loading operator overview` / `Loading operator overview...`; error title `Operator overview unavailable`                                                                                               |
-| Card titles                             | `Operational status`, `Runtime summary`, `Audit summary`, `Dependencies`, `Configuration`, `Frontend build`                                                                                                     |
-| Runtime group headings                  | `Build`, `Git`, `Runtime`                                                                                                                                                                                        |
-| Operational status labels               | `Health`, `Liveness`, `Readiness`, `Health endpoint`, `Info endpoint`, `Prometheus endpoint`                                                                                                                    |
-| Runtime summary labels                  | `Technical overview endpoint`; Build: `Name`, `Group`, `Artifact`, `Version`, `Build time`; Git: `Branch`, `Commit`, `Commit time`; Runtime: `Application`, `Java version`, `Java vendor`, `Profiles`          |
-| Audit summary labels and link           | `Total entries`, `Audit API`, link `Browse audit rows`                                                                                                                                                           |
-| Configuration labels                    | `Default page size`, `Max page size`, `Session store`, `Session timeout`, `Session cookie`, `Exposed endpoints`, `Health probes`, `Tracing sample`, `OpenAPI version`, `CSRF enabled`, `Public API path`, `Shutdown mode` |
-| Frontend build labels                   | `Application`, `Version`, `Build time`, `Runtime mode`                                                                                                                                                           |
-| Boolean values                          | `Yes`, `No`                                                                                                                                                                                                      |
-| Unavailable texts                       | `Operational status unavailable.`, `Build details unavailable.`, `Git details unavailable.`, `Runtime details unavailable.`, `Dependency details unavailable.`, `Configuration details unavailable.`             |
+| Where                                                | Current English                                                                                                                                                                                                           |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Page section `aria-label` (signed-out and signed-in) | `System diagnostics` (reuse existing `ui.route.diagnostics.title`)                                                                                                                                                        |
+| Section `aria-label`s                                | `Diagnostics overview`, `Frontend build`                                                                                                                                                                                  |
+| State blocks                                         | loading `Loading operator overview` / `Loading operator overview...`; error title `Operator overview unavailable`                                                                                                         |
+| Card titles                                          | `Operational status`, `Runtime summary`, `Audit summary`, `Dependencies`, `Configuration`, `Frontend build`                                                                                                               |
+| Runtime group headings                               | `Build`, `Git`, `Runtime`                                                                                                                                                                                                 |
+| Operational status labels                            | `Health`, `Liveness`, `Readiness`, `Health endpoint`, `Info endpoint`, `Prometheus endpoint`                                                                                                                              |
+| Runtime summary labels                               | `Technical overview endpoint`; Build: `Name`, `Group`, `Artifact`, `Version`, `Build time`; Git: `Branch`, `Commit`, `Commit time`; Runtime: `Application`, `Java version`, `Java vendor`, `Profiles`                     |
+| Audit summary labels and link                        | `Total entries`, `Audit API`, link `Browse audit rows`                                                                                                                                                                    |
+| Configuration labels                                 | `Default page size`, `Max page size`, `Session store`, `Session timeout`, `Session cookie`, `Exposed endpoints`, `Health probes`, `Tracing sample`, `OpenAPI version`, `CSRF enabled`, `Public API path`, `Shutdown mode` |
+| Frontend build labels                                | `Application`, `Version`, `Build time`, `Runtime mode`                                                                                                                                                                    |
+| Boolean values                                       | `Yes`, `No`                                                                                                                                                                                                               |
+| Unavailable texts                                    | `Operational status unavailable.`, `Build details unavailable.`, `Git details unavailable.`, `Runtime details unavailable.`, `Dependency details unavailable.`, `Configuration details unavailable.`                      |
 
 Rules:
 
@@ -120,18 +120,18 @@ Values that come from the backend or the build are data and are shown as they ar
 
 ## Answers to likely questions
 
-| Question                                                   | Answer                                                                                                     |
-| ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| Which pages?                                               | `/operator` and `/operator/diagnostics` only.                                                              |
-| Is this the roadmap item M-I18N-004?                       | Yes, all three tasks, including removing the three orphaned keys.                                          |
-| Do I need to provide Polish translations?                  | No. Translations come from the backend catalog; English defaults go in `UI_MESSAGES`.                     |
-| Should the English text change?                            | No, except that table and detail cells show the enum display labels (`Category`) instead of `CATEGORY`.    |
-| Should enum values in the URL be translated?               | No. Identifiers stay in code, URLs and requests; only labels localize.                                     |
-| Translate endpoint paths, health values, dependency names? | No, they are data.                                                                                         |
-| `Yes`/`No` keys?                                           | Add generic ones under `ui.common.`.                                                                       |
-| How to handle "1 audit entry" vs "2 audit entries"?        | Two keys, one/many, like the admin users count.                                                            |
-| Key naming?                                                | `ui.operator.*`, `ui.diagnostics.*`, `ui.common.*`; reuse existing keys where they fit.                    |
-| Add backend seed rows?                                     | No, backend-owned; mention it as a follow-up.                                                              |
-| Mock API seeds?                                            | Optional.                                                                                                  |
-| Update docs?                                               | Changelog entry under Unreleased; roadmap status optional.                                                 |
-| Should I commit?                                           | No, leave it uncommitted.                                                                                  |
+| Question                                                   | Answer                                                                                                  |
+| ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| Which pages?                                               | `/operator` and `/operator/diagnostics` only.                                                           |
+| Is this the roadmap item M-I18N-004?                       | Yes, all three tasks, including removing the three orphaned keys.                                       |
+| Do I need to provide Polish translations?                  | No. Translations come from the backend catalog; English defaults go in `UI_MESSAGES`.                   |
+| Should the English text change?                            | No, except that table and detail cells show the enum display labels (`Category`) instead of `CATEGORY`. |
+| Should enum values in the URL be translated?               | No. Identifiers stay in code, URLs and requests; only labels localize.                                  |
+| Translate endpoint paths, health values, dependency names? | No, they are data.                                                                                      |
+| `Yes`/`No` keys?                                           | Add generic ones under `ui.common.`.                                                                    |
+| How to handle "1 audit entry" vs "2 audit entries"?        | Two keys, one/many, like the admin users count.                                                         |
+| Key naming?                                                | `ui.operator.*`, `ui.diagnostics.*`, `ui.common.*`; reuse existing keys where they fit.                 |
+| Add backend seed rows?                                     | No, backend-owned; mention it as a follow-up.                                                           |
+| Mock API seeds?                                            | Optional.                                                                                               |
+| Update docs?                                               | Changelog entry under Unreleased; roadmap status optional.                                              |
+| Should I commit?                                           | No, leave it uncommitted.                                                                               |

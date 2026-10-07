@@ -6,16 +6,16 @@ This document defines the check format, the groups, the verification kinds, the 
 
 ## Files
 
-| Path                           | Content                                                                       |
-| ------------------------------ | ----------------------------------------------------------------------------- |
-| `checklist/schema.md`          | This document.                                                                |
-| `checklist/quality.yaml`       | Shared code-quality checks (group `quality`).                                 |
-| `checklist/process.yaml`       | Shared outcome-hygiene checks (group `process`).                              |
-| `checklist/tests.yaml`         | Shared test-quality checks (group `tests`), including mutation testing.       |
-| `checklist/skipped-rules.md`   | Source ruleset bullets that were not turned into checks, with the reason.     |
-| `tasks/<id>/task.yaml`         | Task id, prompt, fixture pin, scope allow-list, and the shared checks that apply. |
-| `tasks/<id>/spec.md`           | The hidden product spec. Only the simulated user reads it; the workflow never does. |
-| `tasks/<id>/checks.yaml`       | The task's functional checks and its own `tests` checks for the spec's risky cases. |
+| Path                         | Content                                                                             |
+| ---------------------------- | ----------------------------------------------------------------------------------- |
+| `checklist/schema.md`        | This document.                                                                      |
+| `checklist/quality.yaml`     | Shared code-quality checks (group `quality`).                                       |
+| `checklist/process.yaml`     | Shared outcome-hygiene checks (group `process`).                                    |
+| `checklist/tests.yaml`       | Shared test-quality checks (group `tests`), including mutation testing.             |
+| `checklist/skipped-rules.md` | Source ruleset bullets that were not turned into checks, with the reason.           |
+| `tasks/<id>/task.yaml`       | Task id, prompt, fixture pin, scope allow-list, and the shared checks that apply.   |
+| `tasks/<id>/spec.md`         | The hidden product spec. Only the simulated user reads it; the workflow never does. |
+| `tasks/<id>/checks.yaml`     | The task's functional checks and its own `tests` checks for the spec's risky cases. |
 
 ## Check format
 
@@ -43,12 +43,12 @@ Rules for a check:
 
 ## Groups
 
-| Group        | Scope                                                                                       | File                      |
-| ------------ | ------------------------------------------------------------------------------------------- | ------------------------- |
-| `functional` | The requirements of one task's hidden spec.                                                  | `tasks/<id>/checks.yaml`  |
-| `quality`    | Code quality of the change, shared by all tasks: neutral rewordings of ruleset bullets that fit a TypeScript/React diff, plus conventions the fixture itself demands. | `checklist/quality.yaml`  |
+| Group        | Scope                                                                                                                                                                                                                                                                                                                                                                                                                                           | File                                             |
+| ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
+| `functional` | The requirements of one task's hidden spec.                                                                                                                                                                                                                                                                                                                                                                                                     | `tasks/<id>/checks.yaml`                         |
+| `quality`    | Code quality of the change, shared by all tasks: neutral rewordings of ruleset bullets that fit a TypeScript/React diff, plus conventions the fixture itself demands.                                                                                                                                                                                                                                                                           | `checklist/quality.yaml`                         |
 | `tests`      | The quality of the tests the workflow wrote: they exist and fail without the feature, existing tests stay intact, the right layer, real assertions, mutation score and line coverage of the new code (`checklist/tests.yaml`), plus per-task checks that the spec's risky cases are tested (`tasks/<id>/checks.yaml`). In agentic coding the tests are what lets the next change trust the code, so they are scored apart from the code itself. | `checklist/tests.yaml`, `tasks/<id>/checks.yaml` |
-| `process`    | Outcome hygiene any workflow should meet: green suite, typecheck, lint and build; scope; no debug leftovers; fixture documentation conventions; an honest final reply. | `checklist/process.yaml`  |
+| `process`    | Outcome hygiene any workflow should meet: green suite, typecheck, lint and build; scope; no debug leftovers; fixture documentation conventions; an honest final reply.                                                                                                                                                                                                                                                                          | `checklist/process.yaml`                         |
 
 `task.yaml` lists which shared checks apply to the task under `applies`. A shared check that does not apply to a task is left out of that task's total; it is never scored as a free pass.
 

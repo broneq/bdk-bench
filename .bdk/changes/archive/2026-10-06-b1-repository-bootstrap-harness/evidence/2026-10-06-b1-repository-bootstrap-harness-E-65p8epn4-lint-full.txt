@@ -1,0 +1,30 @@
+
+> bdk-bench@ lint /Users/broneq/projects/bdk-bench
+> eslint --max-warnings 0 .
+
+
+> bdk-bench@ format:check /Users/broneq/projects/bdk-bench
+> prettier --check .
+
+Checking formatting...
+All matched files use Prettier code style!
+
+> bdk-bench@ typecheck /Users/broneq/projects/bdk-bench
+> tsc --noEmit
+
+exit 0
+
+> bdk-bench@ lint /Users/broneq/projects/bdk-bench
+> eslint --max-warnings 0 .
+
+
+> bdk-bench@ format:check /Users/broneq/projects/bdk-bench
+> prettier --check .
+
+Checking formatting...
+All matched files use Prettier code style!
+
+> bdk-bench@ typecheck /Users/broneq/projects/bdk-bench
+> tsc --noEmit
+
+exit 0

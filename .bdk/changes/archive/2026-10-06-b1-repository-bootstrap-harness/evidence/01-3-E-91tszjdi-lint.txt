@@ -1,0 +1,14 @@
+
+/Users/broneq/projects/bdk-bench/.gitignore
+  0:0  warning  File ignored because no matching configuration was supplied
+
+/Users/broneq/projects/bdk-bench/versions.json
+  0:0  warning  File ignored because no matching configuration was supplied
+
+✖ 2 problems (0 errors, 2 warnings)
+
+exit 0
+Checking formatting...
+[error] No parser could be inferred for file "/Users/broneq/projects/bdk-bench/.gitignore".
+Error occurred when checking code style in the above file.
+exit 2

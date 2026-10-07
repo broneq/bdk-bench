@@ -1,0 +1,9 @@
+.bdk/
+.runs/
+node_modules/
+coverage/
+pnpm-lock.yaml
+patches/
+tasks/*/hidden/
+tasks/*/reference/
+.gitignore

@@ -1,0 +1,27 @@
+
+/Users/broneq/projects/bdk-bench/checklist/process.yaml
+  0:0  warning  File ignored because no matching configuration was supplied
+
+/Users/broneq/projects/bdk-bench/checklist/quality.yaml
+  0:0  warning  File ignored because no matching configuration was supplied
+
+/Users/broneq/projects/bdk-bench/checklist/tests.yaml
+  0:0  warning  File ignored because no matching configuration was supplied
+
+/Users/broneq/projects/bdk-bench/tasks/operator-i18n/checks.yaml
+  0:0  warning  File ignored because no matching configuration was supplied
+
+/Users/broneq/projects/bdk-bench/tasks/operator-i18n/task.yaml
+  0:0  warning  File ignored because no matching configuration was supplied
+
+/Users/broneq/projects/bdk-bench/tasks/users-csv/checks.yaml
+  0:0  warning  File ignored because no matching configuration was supplied
+
+/Users/broneq/projects/bdk-bench/tasks/users-csv/task.yaml
+  0:0  warning  File ignored because no matching configuration was supplied
+
+✖ 7 problems (0 errors, 7 warnings)
+
+Checking formatting...
+All matched files use Prettier code style!
+exit 0

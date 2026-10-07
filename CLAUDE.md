@@ -7,7 +7,12 @@ Benchmark of AI coding workflows (plain Claude Code, BDK, OpenSpec, ...). Each w
 ```
 checklist/     - schema.md (check format, groups, scoring, neutrality rules), quality.yaml, tests.yaml and process.yaml (shared checks), skipped-rules.md
 tasks/<id>/    - task.yaml (id, prompt, area, shared checks that apply), spec.md (hidden product spec), checks.yaml (functional checks), hidden/ (hidden tests), reference/ (a solution that passes every check)
-harness/       - runner: per-run working copies, workflow sessions, grader, ledger, promptfoo configs (B1, B3)
+harness/       - runner: per-run working copies, workflow sessions, grader, ledger, promptfoo configs (B1, B3); unit tests sit next to the modules
+harness/suites/<name>/ - one benchmark suite per directory (e.g. `smoke`): its items, workflows and run description
+patches/       - pnpm patches applied to dependencies (promptfoo)
+versions.json  - pinned versions of the tools the harness drives
+package.json, pnpm-lock.yaml - scripts and exact dependency versions
+.github/workflows/ci.yml - CI: lint, format check, typecheck, unit tests, bench check
 adapters/      - one per workflow: version, install, prompt template, end of run (B7)
 results/       - committed result rows and reports, one file per series
 .runs/         - local run state (gitignored): budget ledger, raw session output, debug logs, judge prompts
@@ -54,4 +59,12 @@ Everything written into this repository is in English: code, comments, docs, che
 
 ## Development commands
 
-Node from `.nvmrc`. B1 adds the package manifest, the tooling (lint, format, typecheck, unit tests) and the `bench` commands; list them here when they exist.
+Node from `.nvmrc`, packages with pnpm.
+
+- `pnpm install` - install the pinned dependencies
+- `pnpm bench <suite> [--probe] [--runs N] [--budget USD] [--run-cap USD] [--concurrency N] [--workflows a,b] [--items x,y]` - run a suite; also `pnpm bench check`, `pnpm bench view`, `pnpm bench report <suite> --baseline <series> --candidate <series>` and `pnpm bench regrade <suite> --series <name>`
+- `pnpm lint` - eslint, no warnings allowed
+- `pnpm format` - prettier, rewrite files
+- `pnpm format:check` - prettier, check only
+- `pnpm typecheck` - tsc without emit
+- `pnpm test` - vitest unit tests

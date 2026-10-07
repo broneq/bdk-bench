@@ -64,7 +64,7 @@ scope:
     - bundle-budget.config.json
 
 applies:
-  functional: all          # users-csv.f01 .. users-csv.f20
+  functional: all # users-csv.f01 .. users-csv.f20
   quality:
     - quality.q01
     - quality.q02

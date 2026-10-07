@@ -1,0 +1,4 @@
+Checking formatting...
+[error] No parser could be inferred for file "/Users/broneq/projects/bdk-bench/.prettierignore".
+Error occurred when checking code style in the above file.
+exit 0
